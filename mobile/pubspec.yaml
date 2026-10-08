@@ -41,9 +41,6 @@ dependencies:
   image: ^4.10.1
   mobile_scanner: ^7.4.2
   qr_flutter: ^4.1.0
-  pdf: ^3.13.1
-  printing: ^5.15.1
-  share_plus: ^13.3.1
   path_provider: ^2.1.6
   connectivity_plus: ^7.3.2
   intl: ^0.20.3

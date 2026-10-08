@@ -86,7 +86,6 @@ List<String> permissionsFor(String role, String? loc) => switch (role) {
           'Full access to all 8 locations',
           'Approve or reject new sign-ups — only you can',
           'Approve / reject any cleaning task',
-          'View & export every report',
           'Create users & reset passwords',
         ],
       'exec' || 'aexec' || 'admin' => ['Full access to all 8 locations', 'Record and send cleaning work for approval', 'View the audit log'],
@@ -97,7 +96,7 @@ List<String> permissionsFor(String role, String? loc) => switch (role) {
           'Check expiry & labelling',
           'Add products & labels',
         ],
-      'auditor' => ['Read-only across all 8 locations', 'View cleaning reports', 'View photo evidence', 'Export audit reports'],
+      'auditor' => ['Read-only across all 8 locations', 'View photo evidence'],
       _ => ['Complete assigned tasks', 'Upload photo evidence', 'Add products & check expiry', 'Write product labels'],
     };
 
@@ -237,7 +236,6 @@ void helpSheet(BuildContext context) {
           ('📊', 'Your dashboard', 'One score per location out of 100: 40% cleaning, 35% expiry control, 25% labelling. Tap any location for the detail.'),
           ('✅', 'Approvals', 'Cleaning jobs come to the Super Admin with photo evidence. Approve, or reject with a reason and it goes back to the team.'),
           ('🔔', 'Alerts', 'The bell shows overdue jobs, missing photos, expired stock and missing labels across every kitchen.'),
-          ('📄', 'Reports', 'Weekly or monthly, location by location, Surat vs Ahmedabad. Print to PDF or export to Excel.'),
           ('👥', 'People', 'Create users, change roles, reset forgotten passwords.'),
         ];
   showSheet(context, 'How to use the app', (ctx) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [

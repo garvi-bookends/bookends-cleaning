@@ -180,9 +180,7 @@ class _Dashboard extends StatelessWidget {
           const SecTitle('Quick actions'),
           Row(children: [
             Expanded(
-              child: !p.readonly && tabAllowed('clean')
-                  ? Btn('✓ Do a clean', () => _goClean(nav, 'all'))
-                  : Btn('📄 Open reports', tabAllowed('rep') ? () => nav.go('rep') : null),
+              child: Btn('✓ Do a clean', !p.readonly && tabAllowed('clean') ? () => _goClean(nav, 'all') : null),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -199,8 +197,6 @@ class _Dashboard extends StatelessWidget {
             ]),
             const SecTitle('Surat vs Ahmedabad'),
             CityCompare(weeks: [wk]),
-            const SizedBox(height: 8),
-            if (tabAllowed('rep')) Btn('Full comparison report ›', () => nav.go('rep'), kind: BtnKind.sec, small: true),
           ] else ...[
             const SecTitle('Needs action this week'),
             Builder(builder: (_) {

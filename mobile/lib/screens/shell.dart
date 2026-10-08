@@ -12,7 +12,6 @@ import 'home.dart';
 import 'labels.dart';
 import 'manage.dart';
 import 'profile.dart';
-import 'reports.dart';
 
 /// Which tab is open and the filters that survive switching tabs (the
 /// website's `S` object).
@@ -51,7 +50,6 @@ const _allTabs = [
   TabDef('clean', 'Cleaning', Icons.cleaning_services_outlined),
   TabDef('exp', 'Expiry', Icons.event_note_outlined),
   TabDef('lab', 'Labels', Icons.sell_outlined),
-  TabDef('rep', 'Reports', Icons.bar_chart_rounded),
 ];
 
 const _typeTab = {'cleaning': 'clean', 'labelling': 'lab', 'labeling': 'lab', 'checklist': 'chk'};
@@ -59,7 +57,6 @@ const _typeTab = {'cleaning': 'clean', 'labelling': 'lab', 'labeling': 'lab', 'c
 bool tabAllowed(String tab) {
   final p = S.perm;
   if (tab == 'manage') return p.superadmin;
-  if (tab == 'rep') return p.superadmin;
   if (tab == 'home' || p.superadmin) return true;
   final types = ((S.me?['jobTypes'] as List?) ?? const []).map((e) => '$e').toList();
   if (types.isEmpty) return true;
@@ -110,8 +107,6 @@ class _ShellState extends State<Shell> {
         return const ExpiryScreen();
       case 'lab':
         return const LabelsScreen();
-      case 'rep':
-        return const ReportsScreen();
       default:
         return const HomeScreen();
     }
