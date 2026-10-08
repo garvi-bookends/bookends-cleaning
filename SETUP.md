@@ -698,7 +698,7 @@ Super Admin's only.
 
 ### Daily checklists (Lunch / Dinner / Closing)
 
-**Checklist** sits directly below **Home**. Lunch 11:30 AM–1:30 PM, Dinner
+**Checklist** sits directly below **Home**. Lunch 12:00–1:30 PM, Dinner
 5–6 PM, Closing 10 PM–1 AM (crosses midnight; 12:30 AM belongs to the
 previous day's shift), India time, checked by the server's clock. A photo is
 compulsory before the Google Form opens. API `/api/checklists`, table
