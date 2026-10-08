@@ -11654,6 +11654,8 @@ function buildAlerts() {
         out.push({ id: 'a7' + p.id, sev: 1, type: 'Label missing', loc: L.id, title: p.name, body: 'No label printed · batch ' + p.batch, go: ['product', p.id] });
     });
   });
+  /* Checklists opening or closing in the next 5 minutes. */
+  out = ckReminderAlerts().concat(out);
   out.sort(function (a, b) { return b.sev - a.sev; });
   return out;
 }
@@ -16512,6 +16514,7 @@ function renderChecklists() {
   html += '<div id="ck_clock">' + ckClockHtml() + '</div>';
   CK.cardsHtml = ckCardsHtml();
   html += '<div class="ck-grid" id="ck_cards">' + CK.cardsHtml + '</div>';
+  html += ckNotifyCardHtml();
   html += '<div class="card sm muted" style="margin-top:12px">Each checklist opens only during its time window. ' +
     'Press <b>Open Checklist</b>, tick the items you have done and submit.</div>';
   if (ME.role !== 'staff') html += '<div id="ck_records">' + ckRecordsHtml() + '</div>';
@@ -16603,6 +16606,145 @@ document.addEventListener('visibilitychange', function () {
   if (S.tab === 'chk') ckLoadStatus(true);
   ckPoll();
 });
+
+/* ---------- checklist reminders: 5 minutes before each opens and closes ----------
+   While the app is open (in front or in a background tab), everyone who can
+   send checklists is told:
+     - 5 minutes before a checklist opens:  "Lunch Checklist opens in 5 minutes"
+     - 5 minutes before it closes, if their restaurant has not sent it yet:
+                                            "Lunch Checklist closes in 5 minutes"
+   Each reminder shows once: as a system notification when the person has
+   allowed them (phones need the service worker in sw.js for that), as a
+   message in the app, and in the bell until the moment passes.
+
+   The server cannot send these while the app is closed: that would need web
+   push and a scheduler running every minute, which this hosting does not
+   offer. */
+var CK_REMIND_MS = 5 * 60000;
+var CK_REMIND_KEY = 'bookends.ckReminded';
+
+function ckNotifySupported() { return typeof Notification !== 'undefined'; }
+function ckRemindable() { return !!(ME && !ME.mustChange && !perm().readonly && tabAllowed('chk')); }
+
+/* The reminders due right now: [{ key, type, kind: 'open'|'close', at }]. A
+   reminder is due from 5 minutes before its moment until the moment. */
+function ckDueReminders() {
+  if (!ckRemindable()) return [];
+  var now = ckNow(), out = [];
+  CHKW.WINDOWS.forEach(function (w) {
+    var s = CHKW.windowState(w, now);
+    if (!s.open && s.nextOpensAt && now >= s.nextOpensAt - CK_REMIND_MS && now < s.nextOpensAt) {
+      out.push({ key: w.type + '|open|' + s.nextOpensAt, w: w, kind: 'open', at: s.nextOpensAt });
+    }
+    if (s.open && now >= s.endsAt - CK_REMIND_MS && now < s.endsAt && !ckSubmission(w.type, s.shiftDate)) {
+      out.push({ key: w.type + '|close|' + s.endsAt, w: w, kind: 'close', at: s.endsAt, shiftDate: s.shiftDate });
+    }
+  });
+  return out;
+}
+function ckReminderText(r) {
+  var mins = Math.max(1, Math.ceil((r.at - ckNow()) / 60000));
+  var inMin = mins + ' minute' + (mins === 1 ? '' : 's');
+  return r.kind === 'open'
+    ? { title: r.w.label + ' opens in ' + inMin, body: 'Open from ' + ckRangeText(r.w) + ' IST.' + (ckLoc() ? ' ' + lname(ckLoc()) + '.' : '') }
+    : { title: r.w.label + ' closes in ' + inMin, body: 'Not sent yet' + (ckLoc() ? ' for ' + lname(ckLoc()) : '') + ' — closes at ' + CHKW.fmtMinutes(r.w.end) + ' IST.' };
+}
+/* Shown once each, per device. Old keys are dropped as they pass. */
+function ckReminded() {
+  try { return JSON.parse(localStorage.getItem(CK_REMIND_KEY) || '{}') || {}; } catch (e) { return {}; }
+}
+function ckMarkReminded(key) {
+  var done = ckReminded(), cut = Date.now() - 2 * 86400000;
+  Object.keys(done).forEach(function (k) { if (done[k] < cut) delete done[k]; });
+  done[key] = Date.now();
+  try { localStorage.setItem(CK_REMIND_KEY, JSON.stringify(done)); } catch (e) { }
+}
+function ckShowNotification(title, body, tag) {
+  if (!ckNotifySupported() || Notification.permission !== 'granted') return;
+  var opts = { body: body, tag: tag, renotify: true };
+  if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+    navigator.serviceWorker.getRegistration().then(function (reg) {
+      if (reg) return reg.showNotification(title, opts);
+      try { new Notification(title, opts); } catch (e) { }
+    }).catch(function () { });
+  } else {
+    try { new Notification(title, opts); } catch (e) { }
+  }
+}
+function ckReminders() {
+  var due = ckDueReminders();
+  if (!due.length) return;
+  /* "Closes soon" depends on whether the restaurant has sent it: make sure
+     that is known (fresh within 90 seconds) before saying so. */
+  if (due.some(function (r) { return r.kind === 'close'; }) && !CK.offline &&
+      (!CK.loadedAt || Date.now() - CK.loadedAt > 90000)) {
+    ckLoadStatus(true);
+    due = due.filter(function (r) { return r.kind === 'open'; });
+  }
+  var done = ckReminded();
+  due.forEach(function (r) {
+    if (done[r.key]) return;
+    ckMarkReminded(r.key);
+    var t = ckReminderText(r);
+    ckShowNotification(t.title, t.body, 'ck-' + r.key);
+    toast('🔔 ' + t.title);
+    if (S.tab === 'home' || S.tab === 'chk') render();
+    else if (typeof tabbar === 'function') tabbar();
+  });
+}
+setInterval(function () { try { ckReminders(); } catch (e) { } }, 15000);
+
+/* The bell lists the reminders that are due right now. */
+function ckReminderAlerts() {
+  return ckDueReminders().map(function (r) {
+    var t = ckReminderText(r);
+    /* Top urgency, listed first: these are only true for 5 minutes. */
+    return { id: 'ck' + r.key, sev: 3, type: r.kind === 'close' ? 'Checklist closing' : 'Checklist opening',
+      loc: ckLoc() || '', title: t.title, body: t.body, go: ['chk', r.w.type] };
+  });
+}
+
+/* Asking to allow reminders, from the Checklist page. Browsers only show
+   the question after a tap, so it is never asked unprompted. */
+function ckNotifyCardHtml() {
+  if (!ckRemindable()) return '';
+  if (!ckNotifySupported()) {
+    return '<div class="card sm muted">🔔 Reminders 5 minutes before each checklist opens and closes appear here in the app. ' +
+      'For phone notifications too, add this app to your home screen.</div>';
+  }
+  if (Notification.permission === 'granted') {
+    return '<div class="card sm muted">🔔 Reminders are on: you get a notification 5 minutes before each checklist opens and closes, while the app is open.</div>';
+  }
+  if (Notification.permission === 'denied') {
+    return '<div class="card sm muted">🔕 Notifications are blocked for this site in your browser settings. Reminders still appear inside the app.</div>';
+  }
+  return '<div class="card"><div class="b">🔔 Checklist reminders</div>' +
+    '<div class="sm muted" style="margin:4px 0 10px">Get a notification 5 minutes before each checklist opens and 5 minutes before it closes.</div>' +
+    '<button class="btn sec" data-a="ckNotifyOn">Turn on reminders</button></div>';
+}
+function ckNotifyOn() {
+  if (!ckNotifySupported()) return;
+  var ask = Notification.requestPermission(function () { });
+  Promise.resolve(ask).then(function () {
+    if (Notification.permission === 'granted') {
+      ckShowNotification('Checklist reminders are on', 'You will be told 5 minutes before each checklist opens and closes.', 'ck-on');
+      toast('Reminders are on');
+    } else toast('Reminders were not allowed');
+    render();
+  });
+}
+
+/* The service worker that lets phones show the notifications. Only on
+   https (or localhost); a failure here just means no system notifications. */
+if (navigator.serviceWorker && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function () { });
+  });
+  /* Tapping a reminder while the app is open brings up Checklist. */
+  navigator.serviceWorker.addEventListener('message', function (e) {
+    if (e.data && e.data.open === 'chk' && ME) { closeSheet(); S.tab = 'chk'; render(); }
+  });
+}
 
 /* ---------- the checklist sheet: tick what is done, then submit ---------- */
 function ckSheet(type, replace) {
@@ -16988,6 +17130,7 @@ document.addEventListener('click', function (ev) {
     case 'mgJobs': MGMT_JOBS = x; render(); break;
     case 'mgFilter': MGMT_FILTER = x; render(); break;
     case 'ckMgRetry': CK_MERR = null; render(); break;
+    case 'ckNotifyOn': ckNotifyOn(); break;
     case 'openType': if (!perm().superadmin) break; S.manage = 'type'; S.manageType = x; MGMT_Q = ''; MGMT_FILTER = 'all'; render(); break;
     case 'addJobType': if (!perm().superadmin) break; JOBT_ERR = ''; closeSheet(); jobTypeForm(null); break;
     case 'editJobType': if (!perm().superadmin) break; JOBT_ERR = ''; closeSheet(); jobTypeForm(x); break;
@@ -17154,7 +17297,9 @@ document.addEventListener('click', function (ev) {
     case 'goAlert': {
       DB.read[el.getAttribute('data-y')] = 1; save(); closeSheet();
       var parts = x.split(':');
-      if (parts[0] === 'task') taskSheet(parts[1]); else productSheet(parts[1]);
+      if (parts[0] === 'task') taskSheet(parts[1]);
+      else if (parts[0] === 'chk') { S.tab = 'chk'; render(); }
+      else productSheet(parts[1]);
       break;
     }
     case 'goexp': closeSheet(); S.tab = 'exp'; S.expFilter = x || 'all'; render(); break;
@@ -17387,6 +17532,12 @@ document.addEventListener('keydown', function (ev) {
 
 /* A QR label scanned with the phone camera opens .../#p=P-CPP-01 */
 function handleDeepLink() {
+  /* A checklist reminder tapped while the app was closed opens .../#chk */
+  if (location.hash === '#chk') {
+    S.tab = 'chk';
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { }
+    return;
+  }
   var m = (location.hash || '').match(/^#p=([A-Za-z0-9\-]+)$/);
   if (!m) return;
   PENDING_LINK = m[1];
