@@ -2,7 +2,7 @@
 /* ---------------------------------------------------------------------------
    Makes one account the Super Admin.
 
-     npm run set-superadmin -- husen
+     npm run set-superadmin -- adminexe
 
    The Super Admin approves every self sign-up, so the role is deliberately
    NOT something the app can hand out: no form offers it, and the API refuses
@@ -23,7 +23,7 @@ var uid = (process.argv[2] || '').trim();
 
 if (!uid) {
   console.error('\nUsage:  npm run set-superadmin -- <username>\n');
-  console.error('Example: npm run set-superadmin -- husen\n');
+  console.error('Example: npm run set-superadmin -- adminexe\n');
   process.exit(1);
 }
 

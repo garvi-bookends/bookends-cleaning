@@ -39,7 +39,7 @@ The Bookends Cleaning App replaces paper checklists and verbal follow-ups with o
 | **1. Deep cleaning** | Weekly and monthly cleaning jobs are created automatically for every kitchen. Each job needs a **photo as proof** and a **manager's approval**. |
 | **2. Expiry control** | Every opened or received product is recorded with batch, storage place and use-by date. The app flags what is **expired** or **expiring soon**. |
 | **3. Labelling** | Every product gets a label, either handwritten from an on-screen template or printed with a **QR code** that opens the product in the app. |
-| **4. Compliance reporting** | Live scores per kitchen and per city, a violations list, staff performance, photo evidence, **Print/PDF** and **CSV export**. |
+| **4. Compliance scores** | Live scores per kitchen and per city on the Home dashboard. |
 
 **Key benefits**
 
@@ -72,14 +72,14 @@ There are 8 kitchens in 2 cities. All of them use electric equipment only (no ga
 
 | Role | Who it is for | Sees | Can approve cleaning | Can manage users | Read-only |
 |---|---|---|---|---|---|
-| **Super Admin** | One owner account (Husen) | All kitchens | ✅ | ✅ (plus sign-up approvals and password resets) | — |
+| **Super Admin** | One owner account (Admin EXE, login `adminexe`) | All kitchens | ✅ | ✅ (plus sign-up approvals and password resets) | — |
 | **Execution Head** | Head office | All kitchens | ✅ | ✅ | — |
 | **Assistant Execution Head** | Head office | All kitchens | ✅ | ✅ | — |
 | **Admin** | Office admin | All kitchens | ✅ | ✅ | — |
 | **Head of Kitchen** | Senior chef across kitchens | All kitchens | ✅ | — | — |
 | **Location Manager** | One kitchen's manager | Own kitchen only | ✅ | — | — |
 | **Kitchen Staff** | Cooks and helpers | Own kitchen only | — | — | — |
-| **Auditor** | Internal or external auditor | All kitchens | — | — | ✅ (view and reports only) |
+| **Auditor** | Internal or external auditor | All kitchens | — | — | ✅ (view only) |
 
 **Rules**
 
@@ -89,9 +89,8 @@ There are 8 kitchens in 2 cities. All of them use electric equipment only (no ga
   - staff and managers can only read and write their own kitchen's data
   - the Auditor is blocked from all changes
   - nobody can delete or demote themselves, and the last user-manager can't be removed
-- **Kitchen Staff don't see the Reports tab.**
 
-**Accounts at launch** are Husen Khan (Execution Head), Manish and Rutvik (Assistant Execution Heads), one Location Manager per kitchen, and the Super Admin account.
+**Accounts at launch** are the Super Admin account (Admin EXE) and one Location Manager per kitchen.
 
 ---
 
@@ -193,19 +192,6 @@ Tapping the **bell** shows alerts, most urgent first:
 
 Tapping an alert opens the job or product so it can be fixed. "Mark all as read" clears the badge.
 
-### 4.6 Reporting flow
-
-1. A manager or head-office user opens **Reports** and picks **This week** or **Last 4 weeks**.
-2. The report shows:
-   - the group score
-   - a kitchen-by-kitchen table
-   - Surat vs Ahmedabad
-   - violations
-   - staff compliance
-   - up to 24 photos as evidence
-3. **🖨 Print / PDF** gives a printable report with the date and the name of the person who printed it.
-4. **⤓ Export CSV** downloads a spreadsheet with one row per kitchen per week.
-
 ### 4.7 Offline and sync flow
 
 ```mermaid
@@ -225,7 +211,7 @@ flowchart LR
 
 ## 5. Screen-by-screen guide
 
-The tab bar at the bottom has **Home · Cleaning · Expiry · Labels · Reports**. On a desktop or tablet 900px wide or more, it moves to a left sidebar. The header has a **kitchen selector** (head-office roles can pick "All 8 locations"), the **alerts bell**, and the **profile** button.
+The tab bar at the bottom has **Home · Cleaning · Expiry · Labels**. On a desktop or tablet 900px wide or more, it moves to a left sidebar. The header has a **kitchen selector** (head-office roles can pick "All 8 locations"), the **alerts bell**, and the **profile** button.
 
 ### 5.1 Home
 
@@ -269,18 +255,6 @@ Below the buttons are "Jobs still to do this week" and "Throw these away 🔴".
 - Labelling compliance ring, "Labels to write (N)", and filters: All, Missing, Labelled.
 - For each product, a handwritten-label template, a printable QR label, and "I have written it and stuck it on".
 - Labels print as a 2-column sheet from the phone or computer.
-
-### 5.5 Reports (not shown to Kitchen Staff)
-
-- Period: This week or Last 4 weeks.
-- Group score, kitchen-wise table (Clean %, Label %, Expiry %, Score), and Surat vs Ahmedabad.
-- Violations:
-  - **Cleaning:** rejected, overdue, or photo missing
-  - **Expiry:** expired or expiring within 7 days
-  - **Labelling:** no label
-- Staff compliance table: jobs done, jobs approved, and success rate.
-- Photo evidence grid.
-- **Print / PDF** and **Export CSV**.
 
 ### 5.6 Kitchen dashboard
 
@@ -493,7 +467,6 @@ There are **33 weekly jobs** and **13 monthly heavy jobs**, the same for every k
 | 9 | The cleaning checklist **can't be edited in the app** | Changes need a developer | Add a checklist editor for head office | Low |
 | 10 | No screen for **sign-in history** or for **disabling an account**, although the server supports both | Admins can't see them | Add these to the admin panel | Low |
 | 11 | Kitchens and the checklist are written into the code; the account-locked message names specific people | Changes need a developer | Move these to settings | Low |
-| 12 | Reports only offer "This week" and "Last 4 weeks" | No history beyond 4 weeks in the app | Add a week or month picker | Low |
 
 ---
 
@@ -506,7 +479,7 @@ There are **33 weekly jobs** and **13 monthly heavy jobs**, the same for every k
 | **Pending (account)** | A self sign-up waiting for the Super Admin's approval |
 | **Awaiting OK** | A cleaning job that has been done with a photo and is waiting for a manager's approval |
 | **Compliance score** | 40% cleaning + 35% expiry control + 25% labelling |
-| **Auditor** | A read-only role that can view all data and reports but can't change anything |
+| **Auditor** | A read-only role that can view all data but can't change anything |
 | **Neon** | The cloud PostgreSQL database service |
 | **Vercel / Blob / Cron** | The hosting platform, its file storage for photos, and its scheduled daily job |
 | **Hashed password** | A password stored in scrambled one-way form that can't be read back |

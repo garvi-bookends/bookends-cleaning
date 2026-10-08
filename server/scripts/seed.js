@@ -8,7 +8,7 @@
    Idempotent: an account whose login ID already exists is left alone, so
    re-running never overwrites a password someone has since changed.
 
-   The three head-office accounts and the eight location managers get
+   The eight location managers get
    DEFAULT_PASSWORD with must_change_password = true, exactly as before. The
    bootstrap admin (SEED_ADMIN_UID) gets SEED_ADMIN_PASSWORD, which must be
    supplied and must not be the shared default — it is the one account that
@@ -34,11 +34,9 @@ var LOCATIONS = [
   { id: 'AHM-AIKO',    code: 'AKA', head: 'Akshay' }
 ];
 
-var HEAD_OFFICE = [
-  { id: 'U-HK',  name: 'Husen Khan', role: 'exec'  },
-  { id: 'U-MAN', name: 'Manish',     role: 'aexec' },
-  { id: 'U-RUT', name: 'Rutvik',     role: 'aexec' }
-];
+/* Head office is just the bootstrap admin (Admin EXE, the Super Admin),
+   created separately in run(). Add more Execution Heads from the app. */
+var HEAD_OFFICE = [];
 
 function buildRoster() {
   var roster = HEAD_OFFICE.map(function (p) {

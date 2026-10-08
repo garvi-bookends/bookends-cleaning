@@ -105,14 +105,14 @@
 <table>
   <thead><tr><th style="width:21%">Role</th><th style="width:27%">Who it is for</th><th style="width:14%">Kitchens</th><th>Main powers</th></tr></thead>
   <tbody>
-    <tr><td><b>Super Admin</b></td><td>The one owner of the system (Husen)</td><td>All 8</td><td>Everything an Execution Head can do, plus: approve or reject new sign-ups, answer "forgot password" requests, the User Management panel. There is only ever one.</td></tr>
-    <tr><td><b>Execution Head</b></td><td>Senior head office</td><td>All 8</td><td>Approve / reject cleaning, all reports, create and remove users, change roles, reset passwords.</td></tr>
+    <tr><td><b>Super Admin</b></td><td>The one owner of the system (Admin EXE)</td><td>All 8</td><td>Everything an Execution Head can do, plus: approve or reject new sign-ups, answer "forgot password" requests, the User Management panel. There is only ever one.</td></tr>
+    <tr><td><b>Execution Head</b></td><td>Senior head office</td><td>All 8</td><td>Approve / reject cleaning, create and remove users, change roles, reset passwords.</td></tr>
     <tr><td><b>Assistant Execution Head</b></td><td>Head office</td><td>All 8</td><td>Same as Execution Head.</td></tr>
     <tr><td><b>Admin</b></td><td>Head-office administration</td><td>All 8</td><td>Same as Execution Head.</td></tr>
-    <tr><td><b>Head of Kitchen</b></td><td>Culinary lead across kitchens</td><td>All 8</td><td>Approve / reject cleaning, record cleaning and products anywhere, all reports. Cannot manage people.</td></tr>
-    <tr><td><b>Location Manager</b></td><td>The manager of one kitchen</td><td class="own">Own only</td><td>Do and approve cleaning, products and labels for their kitchen; their kitchen's reports.</td></tr>
-    <tr><td><b>Kitchen Staff</b></td><td>Everyone working in a kitchen</td><td class="own">Own only</td><td>Do cleaning jobs with a photo, add and label products, check expiry. Simple home screen, no Reports.</td></tr>
-    <tr><td><b>Auditor</b></td><td>Inspectors, auditors</td><td>All 8</td><td>Read-only: sees everything, reports and photos, but cannot change anything.</td></tr>
+    <tr><td><b>Head of Kitchen</b></td><td>Culinary lead across kitchens</td><td>All 8</td><td>Approve / reject cleaning, record cleaning and products anywhere. Cannot manage people.</td></tr>
+    <tr><td><b>Location Manager</b></td><td>The manager of one kitchen</td><td class="own">Own only</td><td>Do and approve cleaning, products and labels for their kitchen.</td></tr>
+    <tr><td><b>Kitchen Staff</b></td><td>Everyone working in a kitchen</td><td class="own">Own only</td><td>Do cleaning jobs with a photo, add and label products, check expiry. Simple home screen.</td></tr>
+    <tr><td><b>Auditor</b></td><td>Inspectors, auditors</td><td>All 8</td><td>Read-only: sees everything, including photos, but cannot change anything.</td></tr>
   </tbody>
 </table>
 
@@ -176,7 +176,7 @@
 <div class="twocol">
 <div class="card">
 <h4>Too many wrong passwords</h4>
-<p>After <b>8</b> wrong passwords in a row the account is locked for <b>15 minutes</b>. The message says how long. To get in sooner, ask Husen, Manish or Rutvik to reset your password — a reset also unlocks the account.</p>
+<p>After <b>8</b> wrong passwords in a row the account is locked for <b>15 minutes</b>. The message says how long. To get in sooner, ask the Super Admin (Admin EXE) to reset your password — a reset also unlocks the account.</p>
 </div>
 <div class="card">
 <h4>Working offline</h4>
@@ -223,11 +223,10 @@
 <!-- Exec / Aexec / Admin -->
 <h3><span class="role-head">Execution Head · Assistant Execution Head · Admin <span class="role-tag">All 8 kitchens</span></span></h3>
 <p>These three roles have the same abilities.</p>
-<h4>Dashboard and reports</h4>
+<h4>Dashboard</h4>
 <ul>
   <li><b>Home:</b> overall score, kitchen league table, Surat vs Ahmedabad, the "every Tuesday" card, key numbers (expired, pending, rejected, missing photos, urgent alerts). Tap a kitchen for its detail.</li>
-  <li>The kitchen picker at the top includes <b>All 8 locations</b> on Home and Reports.</li>
-  <li><b>Reports tab:</b> kitchen-by-kitchen scores, violations, staff compliance and photo evidence. <b>🖨 Print / PDF</b> or <b>⤓ Export CSV</b> (opens in Excel).</li>
+  <li>The kitchen picker at the top includes <b>All 8 locations</b> on Home.</li>
 </ul>
 <h4>Cleaning, products, labels</h4>
 <ul>
@@ -246,21 +245,21 @@
   </tbody>
 </table>
 <p><b>You cannot:</b> approve or reject sign-ups (you see the names, marked "Only the Super Admin can approve"); see the "forgot password" queue; change, reset or remove the Super Admin; demote or remove yourself; remove or demote the last account that can manage people.</p>
-<div class="note"><b>Recent activity</b> shows actions taken <b>on your own phone</b> only. It is not a shared log of what staff did on theirs — for that, use Reports.</div>
+<div class="note"><b>Recent activity</b> shows actions taken <b>on your own phone</b> only. It is not a shared log of what staff did on theirs.</div>
 </section>
 
 <section>
 <!-- HoK -->
 <h3 style="margin-top:0"><span class="role-head">Head of Kitchen <span class="role-tag">All 8 kitchens</span></span></h3>
 <ul>
-  <li>Same dashboard, alerts and Reports as head office, across all kitchens.</li>
+  <li>Same dashboard and alerts as head office, across all kitchens.</li>
   <li><b>Approve / reject</b> cleaning jobs anywhere; do cleaning jobs; add, edit and label products anywhere.</li>
   <li><b>Cannot</b> manage people: no People screen, no User Management, cannot reset passwords.</li>
 </ul>
 
 <!-- Manager -->
 <h3><span class="role-head">Location Manager <span class="role-tag alt">Own kitchen only</span></span></h3>
-<p><b>You see:</b> your kitchen's dashboard, a "Needs action this week" list, the bell, and Reports for your kitchen. New weekly and monthly jobs are assigned to you by default.</p>
+<p><b>You see:</b> your kitchen's dashboard, a "Needs action this week" list, and the bell. New weekly and monthly jobs are assigned to you by default.</p>
 <table>
   <thead><tr><th style="width:32%">Task</th><th>How</th></tr></thead>
   <tbody>
@@ -268,14 +267,13 @@
     <tr><td>Reject a job</td><td>Same screen → <b>Reject</b> → type the reason (e.g. "grease still on the hood") → it goes back to the kitchen with the reason in red.</td></tr>
     <tr><td>Do a cleaning job yourself</td><td>As for Kitchen Staff (below). You can also approve it.</td></tr>
     <tr><td>Products, labels, expiry</td><td>As for Kitchen Staff, for your kitchen.</td></tr>
-    <tr><td>Reports</td><td><span class="path">Reports</span> → your kitchen → Print / PDF or Export CSV.</td></tr>
   </tbody>
 </table>
 <p><b>You cannot:</b> see other kitchens, manage people, or reset passwords (ask head office).</p>
 
 <!-- Staff -->
 <h3><span class="role-head">Kitchen Staff <span class="role-tag alt">Own kitchen only</span></span></h3>
-<p><b>You see:</b> a simple home with four big buttons — <b>Cleaning</b>, <b>Label a product</b>, <b>Check expiry</b>, <b>Scan a label</b> — plus this week's jobs and a "Throw these away" list. Four tabs: Home, Cleaning, Expiry, Labels (no Reports).</p>
+<p><b>You see:</b> a simple home with four big buttons — <b>Cleaning</b>, <b>Label a product</b>, <b>Check expiry</b>, <b>Scan a label</b> — plus this week's jobs and a "Throw these away" list. Four tabs: Home, Cleaning, Expiry, Labels.</p>
 <table>
   <thead><tr><th style="width:32%">Task</th><th>How</th></tr></thead>
   <tbody>
@@ -289,14 +287,13 @@
 <ul class="small">
   <li>You can record <b>any</b> job in your kitchen, not only ones assigned to you. The chip <b>My jobs</b> shows jobs assigned to you.</li>
   <li>Each job needs <b>one</b> photo. It is stamped with the date, time and your initials.</li>
-  <li>You <b>cannot</b> approve jobs ("Waiting for manager approval"), see other kitchens or open Reports.</li>
+  <li>You <b>cannot</b> approve jobs ("Waiting for manager approval") or see other kitchens.</li>
 </ul>
 
 <!-- Auditor -->
 <h3><span class="role-head">Auditor <span class="role-tag">All 8 kitchens</span> <span class="role-tag alt">Read-only</span></span></h3>
 <ul>
-  <li>Sees the full dashboard, the bell, every kitchen's cleaning jobs, products and photos, and all Reports (including Print / PDF and CSV).</li>
-  <li>Home shows <b>📄 Open reports</b> instead of "Do a clean / Add product".</li>
+  <li>Sees the full dashboard, the bell, every kitchen's cleaning jobs, products and photos.</li>
   <li><b>Cannot change anything:</b> no photo taking, no Done, no Approve / Reject, no adding or editing products. The server refuses changes from an Auditor account even if attempted.</li>
 </ul>
 </section>
@@ -411,11 +408,10 @@
 <ol>
   <li>Home → set the picker to <b>All 8 locations</b> → look at the league table and Surat vs Ahmedabad. Tap a kitchen for detail.</li>
   <li>Check <b>☑ Approvals</b> and clear anything waiting.</li>
-  <li><span class="path">Reports</span> → <b>🖨 Print / PDF</b> to keep a copy, or <b>⤓ Export CSV</b> to open in Excel.</li>
 </ol></div>
 
 <div class="card"><h4>I. An audit or inspection visit</h4>
-<p>Create an account with role <b>Auditor</b> for the inspector. They can see every kitchen, every job with its photo, and all reports, but cannot change anything. Remove the account when the audit is over.</p></div>
+<p>Create an account with role <b>Auditor</b> for the inspector. They can see every kitchen, and every job with its photo, but cannot change anything. Remove the account when the audit is over.</p></div>
 </section>
 
 <!-- ============================================================ 6. SCHEDULE -->
@@ -449,7 +445,6 @@
     <tr><td>Re-open a finished job</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c own">own</td><td class="c n">—</td><td class="c n">—</td></tr>
     <tr><td>Add / edit / discard products</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c own">own</td><td class="c own">own</td><td class="c n">—</td></tr>
     <tr><td>Print labels, scan QR</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c own">own</td><td class="c own">own</td><td class="c y">✓</td></tr>
-    <tr><td>Reports, Print / PDF, CSV</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c own">own</td><td class="c n">—</td><td class="c y">✓</td></tr>
     <tr><td>Create users, change roles, remove users</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td></tr>
     <tr><td>Reset someone's password</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td></tr>
     <tr><td>Approve / reject new sign-ups</td><td class="c y">✓</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td><td class="c n">—</td></tr>

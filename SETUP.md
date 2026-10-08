@@ -192,7 +192,7 @@ connects as the table owner over a direct connection and bypasses RLS.
 npm run seed
 ```
 
-This recreates the roster the app used to seed locally (Husen, Manish, Rutvik
+This recreates the roster the app used to seed locally (the Admin EXE Super Admin
 and the eight location managers), with bcrypt hashes instead of plain text.
 Everyone except the bootstrap admin gets `DEFAULT_PASSWORD` and must choose
 their own on first sign-in. Re-running it never overwrites a password someone
@@ -322,7 +322,7 @@ it, so a plain-http production server only works on `localhost`.
 # 1. sign in as an admin
 curl -s -c cookies.txt -X POST http://localhost:3000/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"uid":"husen","password":"your-admin-password"}'
+  -d '{"uid":"adminexe","password":"your-admin-password"}'
 # -> {"user":{...},"accessToken":"eyJ...","expiresIn":900,"mustChangePassword":false}
 
 # 2. create the account
@@ -363,7 +363,7 @@ and **pending**:
    approval"*. With a wrong password it says the usual *"Invalid username or
    password"* — the approval message only goes to someone who knows the
    password, so it reveals nothing about which usernames exist.
-3. The **Super Admin (husen)** sees *"N new accounts waiting for approval"*
+3. The **Super Admin (adminexe)** sees *"N new accounts waiting for approval"*
    on his home screen, and opens **People, roles & passwords**. Sign-ups
    appear at the top under **Waiting for approval**, with the kitchen they
    said they work at pre-selected. He picks the role and kitchen and taps
@@ -376,7 +376,7 @@ and **pending**:
 
 ### The Super Admin
 
-Exactly one account, **husen**, holds the **Super Admin** role. It is the only
+Exactly one account, **adminexe**, holds the **Super Admin** role. It is the only
 account that can approve or reject self sign-ups.
 
 - **Only one can ever exist.** A unique index in the database refuses a second
@@ -386,21 +386,21 @@ account that can approve or reject self sign-ups.
   on the server:
 
   ```bash
-  npm run set-superadmin -- husen
+  npm run set-superadmin -- adminexe
   ```
 
   Naming someone else steps the current Super Admin down to Execution Head in
   the same transaction.
 - **Nobody else can take it over.** Other admins cannot reset, edit or delete
-  the Super Admin account. Without that, an Execution Head could reset husen's
+  the Super Admin account. Without that, an Execution Head could reset the Super Admin's
   password and sign in as him.
 - **It cannot be removed by accident.** The Super Admin cannot change their
   own role from the app, so the system is never left with nobody to approve.
-  husen changes his own password from **🔒 Change my password**.
+  adminexe changes their own password from **🔒 Change my password**.
 
 ### Super Admin dashboard and "Forgot password?"
 
-husen's **Signed in** menu has **🛡️ Super Admin dashboard**. It shows:
+adminexe's **Signed in** menu has **🛡️ Super Admin dashboard**. It shows:
 
 - **Every account**: name, username, role, kitchen, and status (never signed
   in, last sign-in, waiting for approval).
@@ -412,12 +412,12 @@ husen's **Signed in** menu has **🛡️ Super Admin dashboard**. It shows:
 is stored (requirement 3); there is no way back from the hash to the
 password. Showing passwords would mean storing them readably again, which
 is the problem this whole change removed. Instead, each row has **🔑 Set new
-password**: husen types a temporary one (or leaves it blank for `1234`),
+password**: adminexe types a temporary one (or leaves it blank for `1234`),
 sees it once to hand over, and the person must choose their own at next
 sign-in. They are signed out on every device at the same moment.
 
 "Forgot password?" works without email or SMS, which this system does not
-have: the person enters their username, and the request appears on husen's
+have: the person enters their username, and the request appears on adminexe's
 dashboard and home screen. The reply is the same whether or not the username
 exists, so the form cannot be used to discover accounts. Requests are limited
 to 10 an hour per address.
@@ -597,8 +597,8 @@ can never be downloaded from the site.
    | `REFRESH_TOKEN_SECRET` | another new random value |
    | `CRON_SECRET` | another new random value |
    | `DEFAULT_PASSWORD`, `MIN_PASSWORD_LENGTH`, `MAX_FAILED_ATTEMPTS`, `LOCKOUT_MINUTES` | as in `.env.example` |
-   | `SEED_ADMIN_UID`, `SEED_ADMIN_NAME` | `husen`, `Husen Khan` |
-   | `SEED_ADMIN_PASSWORD` | Husen's first password on the live site, 10+ characters. Remove it after the first deploy |
+   | `SEED_ADMIN_UID`, `SEED_ADMIN_NAME` | `adminexe`, `Admin EXE` |
+   | `SEED_ADMIN_PASSWORD` | Admin EXE's first password on the live site, 10+ characters. Remove it after the first deploy |
    | `CORS_ORIGINS` | leave **unset** |
 
    Do not reuse the secrets from your local `.env`. `NODE_ENV` is set by
@@ -651,7 +651,7 @@ can never be downloaded from the site.
    `SUPABASE_SERVICE_ROLE_KEY` from your local `.env`.
 
 8. **Deploy** (push to `main`, or Deployments → Redeploy). Sign in as
-   `husen` with `SEED_ADMIN_PASSWORD`, then delete that variable in Vercel.
+   `adminexe` with `SEED_ADMIN_PASSWORD`, then delete that variable in Vercel.
 
 9. **Protect previews:** Settings → Deployment Protection → **Vercel
    Authentication** on for Preview.
