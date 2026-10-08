@@ -113,14 +113,20 @@ function run() {
   console.log('[seed] creating the starting roster\n');
 
   /* The bootstrap admin first, so there is always an account that can manage
-     users even if a later step fails. */
-  return ensureUser(
-    /* The bootstrap admin is the Super Admin: the one account that approves
-       self sign-ups. The database allows only one. */
-    { id: 'U-ADMIN', name: config.seed.adminName, role: 'superadmin', loc: null, mustChange: false },
-    adminUid,
-    adminPassword
-  ).then(function (adminResult) {
+     users even if a later step fails. It is the Super Admin, and the database
+     allows only one: once someone holds the role (even under another login
+     ID, after a hand-over), there is nothing to bootstrap. */
+  return db.query("select uid from app_users where role = 'superadmin'").then(function (r) {
+    if (r.rows[0]) {
+      console.log('  = ' + padRight(r.rows[0].uid, 12) + ' is already the Super Admin — bootstrap admin skipped');
+      return { created: false, uid: r.rows[0].uid };
+    }
+    return ensureUser(
+      { id: 'U-ADMIN', name: config.seed.adminName, role: 'superadmin', loc: null, mustChange: false },
+      adminUid,
+      adminPassword
+    );
+  }).then(function (adminResult) {
 
     /* Then everyone else, one at a time so the log reads in order. */
     return roster.reduce(function (chain, spec) {
@@ -140,8 +146,8 @@ function run() {
     }, Promise.resolve({ created: 0 })).then(function (acc) {
 
       console.log('\n[seed] done — ' + (acc.created + (adminResult.created ? 1 : 0)) + ' account(s) created');
-      console.log('[seed] admin login ID : ' + adminUid);
-      console.log('[seed] admin password : the SEED_ADMIN_PASSWORD you set in .env');
+      console.log('[seed] admin login ID : ' + adminResult.uid);
+      if (adminResult.created) console.log('[seed] admin password : the SEED_ADMIN_PASSWORD you set in .env');
       console.log('[seed] everyone else  : password ' + config.password.defaultPassword +
         ', and must choose their own on first sign-in');
       console.log('\n[seed] Remove SEED_ADMIN_PASSWORD from .env once you have signed in successfully.');
