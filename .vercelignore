@@ -6,3 +6,6 @@
 *.log
 node_modules
 .vscode
+
+# Flutter mobile app — not part of the web deploy
+mobile
