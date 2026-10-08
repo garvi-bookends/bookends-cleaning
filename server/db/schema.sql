@@ -268,8 +268,12 @@ alter table app_checklists alter column photo drop not null;
 alter table app_checklists add column if not exists answers jsonb;
 alter table app_checklists drop constraint if exists app_checklists_photo_present;
 
-create unique index if not exists app_checklists_one_per_shift
-  on app_checklists (user_id, checklist_type, shift_date);
+-- One of each checklist per RESTAURANT per shift. It used to be one per
+-- person, so someone who looks after several restaurants could send Lunch
+-- for the first and was then refused for every other one.
+drop index if exists app_checklists_one_per_shift;
+create unique index if not exists app_checklists_one_per_loc_shift
+  on app_checklists (loc, checklist_type, shift_date);
 create index if not exists app_checklists_shift on app_checklists (shift_date desc, loc);
 
 create index if not exists bk_tasks_upd    on bk_tasks (updated_at);

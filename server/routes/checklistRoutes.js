@@ -54,13 +54,24 @@ router.get('/status', asyncHandler(function (req, res) {
   var dates = [];
   states.forEach(function (s) { if (dates.indexOf(s.shiftDate) === -1) dates.push(s.shiftDate); });
 
-  return checklists.listForUser(req.auth.id, dates).then(function (mine) {
+  /* Each restaurant sends each checklist once, whoever sends it, so what
+     matters is what has been sent for the restaurants this person can fill
+     in: their own kitchen, or every kitchen for group roles. */
+  var all = seesAllLocations(req.auth.role);
+  var load = all || req.auth.loc
+    ? checklists.listForShifts(dates, all ? null : req.auth.loc)
+    : checklists.listForUser(req.auth.id, dates);
+
+  return load.then(function (sent) {
     var out = states.map(function (s) {
-      var sub = mine.filter(function (m) { return m.type === s.type && m.shiftDate === s.shiftDate; })[0] || null;
+      var subs = sent.filter(function (m) { return m.type === s.type && m.shiftDate === s.shiftDate; });
       return {
         type: s.type, label: s.label, open: s.open, shiftDate: s.shiftDate,
         startsAt: s.startsAt, endsAt: s.endsAt, nextOpensAt: s.nextOpensAt,
-        submission: sub
+        /* One per restaurant. `submission` is this person's own, for pages
+           loaded before this changed. */
+        submissions: subs,
+        submission: subs.filter(function (m) { return m.userId === req.auth.id; })[0] || null
       };
     });
     res.set('Cache-Control', 'no-store');
@@ -123,11 +134,12 @@ router.post('/', asyncHandler(function (req, res) {
         console.log('[checklist] ' + user.uid + ' submitted ' + type + ' for ' + state.shiftDate + (loc ? ' at ' + loc : ''));
         return res.status(201).json({ checklist: rec });
       }
-      /* Already done this shift: hand back the record that is there. */
-      return checklists.listForUser(user.id, [state.shiftDate]).then(function (mine) {
-        var existing = mine.filter(function (m) { return m.type === type; })[0] || null;
+      /* This restaurant already sent it this shift: hand back that record. */
+      return checklists.listForShifts([state.shiftDate], loc).then(function (sent) {
+        var existing = sent.filter(function (m) { return m.type === type; })[0] || null;
         res.status(409).json({
-          error: 'You have already submitted the ' + win.label + ' for this shift.',
+          error: 'The ' + win.label + ' for this restaurant has already been submitted for this shift' +
+            (existing && existing.userName ? ' by ' + existing.userName : '') + '.',
           code: 'ALREADY_SUBMITTED',
           checklist: existing
         });

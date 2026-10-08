@@ -54,14 +54,14 @@ function toApi(row, opts) {
   };
 }
 
-/* Resolves to the new record, or to null when this person already has one
-   for this checklist and shift (the unique index decides, so two taps at the
-   same instant still cannot make two rows). */
+/* Resolves to the new record, or to null when this restaurant already has
+   one for this checklist and shift (the unique index decides, so two taps at
+   the same instant still cannot make two rows). */
 function create(rec) {
   return db.query(
     'insert into app_checklists (id, user_id, user_name, loc, checklist_type, shift_date, start_time, end_time, photo, answers, status, submitted_at) ' +
     "values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $11::jsonb, 'SUBMITTED', $10) " +
-    'on conflict (user_id, checklist_type, shift_date) do nothing ' +
+    'on conflict (loc, checklist_type, shift_date) do nothing ' +
     'returning ' + COLUMNS,
     [newId(), rec.userId, rec.userName, rec.loc, rec.type, rec.shiftDate,
       new Date(rec.startTime), new Date(rec.endTime), null, new Date(rec.submittedAt),
@@ -83,6 +83,17 @@ function listForUser(userId, shiftDates) {
   ).then(function (r) { return r.rows.map(function (row) { return toApi(row); }); });
 }
 
+/* Every record for the given shift dates, at one kitchen or (loc null) at
+   all of them — what the checklist page needs to show "Submitted" for the
+   restaurant being filled in, whoever sent it. */
+function listForShifts(shiftDates, loc) {
+  var params = [shiftDates];
+  var sql = 'select ' + COLUMNS + ' from app_checklists where shift_date = any($1::date[])';
+  if (loc) { params.push(loc); sql += ' and loc = $2'; }
+  return db.query(sql + ' order by submitted_at desc', params)
+    .then(function (r) { return r.rows.map(function (row) { return toApi(row); }); });
+}
+
 /* The admin list. `loc` limits it to one kitchen; null means every kitchen. */
 function list(opts) {
   var params = [opts.from, opts.to];
@@ -98,6 +109,7 @@ module.exports = {
   create: create,
   findById: findById,
   listForUser: listForUser,
+  listForShifts: listForShifts,
   list: list,
   toApi: toApi
 };

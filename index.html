@@ -16395,11 +16395,21 @@ function ckLoc() {
   if (!perm().all) return ME.loc || null;
   return S.loc && S.loc !== 'ALL' ? S.loc : (ME.loc || null);
 }
+/* What has been sent for this checklist and shift at the restaurant being
+   filled in. Each restaurant sends each checklist once, whoever sends it;
+   sending one restaurant's leaves every other restaurant's open. */
+function ckDoneKey(type, loc) { return type + '|' + (loc || ''); }
 function ckSubmission(type, shiftDate) {
-  var d = CK.done[type];
+  var loc = ckLoc();
+  var d = CK.done[ckDoneKey(type, loc)];
   if (d && d.checklist && d.checklist.shiftDate === shiftDate) return d.checklist;
   var st = CK.status && CK.status[type];
-  if (st && st.submission && st.submission.shiftDate === shiftDate) return st.submission;
+  if (!st) return null;
+  if (st.submissions) {
+    return st.submissions.filter(function (m) { return m.shiftDate === shiftDate && (m.loc || null) === (loc || null); })[0] || null;
+  }
+  /* A server from before per-restaurant checklists: only this person's own. */
+  if (st.submission && st.submission.shiftDate === shiftDate && (!loc || st.submission.loc === loc)) return st.submission;
   return null;
 }
 function ckErrMsg(err) {
@@ -16626,7 +16636,7 @@ function ckSubmit(type) {
   (function () {
     Api.post('/api/checklists', { type: type, loc: ckLoc(), answers: ckAnswers(type) }).then(function (data) {
       CK.busy = false;
-      CK.done[type] = { checklist: data.checklist };
+      CK.done[ckDoneKey(type, data.checklist.loc)] = { checklist: data.checklist };
       delete CK.ticks[type];
       logAct('checklist', w.label + ' submitted', ckLoc()); saveLocal();
       CK.cache = {};
@@ -16637,9 +16647,9 @@ function ckSubmit(type) {
     }, function (err) {
       CK.busy = false;
       if (err.code === 'ALREADY_SUBMITTED' && err.data && err.data.checklist) {
-        CK.done[type] = { checklist: err.data.checklist };
+        CK.done[ckDoneKey(type, err.data.checklist.loc)] = { checklist: err.data.checklist };
         delete CK.ticks[type];
-        toast('You have already submitted this checklist for this shift');
+        toast('This restaurant has already submitted this checklist for this shift');
         ckRefresh(true);
         ckSheet(type, true);
         return;
