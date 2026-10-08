@@ -15551,6 +15551,28 @@ function renderTypeProducts(t, kind) {
    checklist records on the server rather than anything set up here. */
 var CK_MDATE = null;          /* the day being looked at; null = today (IST) */
 var CK_MERR = null;           /* { date, msg } when that day could not be loaded */
+var CK_MBUSY = false;         /* a refresh of that day is in flight */
+/* Fetches the day being looked at again, and redraws only if a checklist
+   was sent (or changed) meanwhile. Called on opening the page and every
+   few seconds while it stays open, so a checklist a manager submits on
+   their phone shows up here without reloading the app. */
+function ckMgRefresh(force) {
+  if (CK_MBUSY || !(S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist')) return;
+  var date = CK_MDATE || ckTodayIST();
+  if (!force && ckCacheAge(date, date, null) < 30000) return;
+  var before = JSON.stringify(ckCached(date, date, null));
+  CK_MBUSY = true;
+  ckFetch(date, date, null, true).then(function (rows) {
+    CK_MBUSY = false;
+    if (CK_MERR && CK_MERR.date === date) CK_MERR = null;
+    if (JSON.stringify(rows) !== before && S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist') renderTypeServices();
+  }, function (err) {
+    CK_MBUSY = false;
+    if (ckCached(date, date, null)) return;     /* keep showing what we have */
+    CK_MERR = { date: date, msg: err && err.offline ? CK_NET : 'Could not load the checklists for this day.' };
+    if (S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist') renderTypeServices();
+  });
+}
 /* The manager of a restaurant: its Location Manager account(s) from the
    roster, or the head named in the location list when none is set up. */
 function ckManagerOf(L) {
@@ -15610,7 +15632,7 @@ function renderTypeChecklists(t) {
   var span = {};
   shown.forEach(function (x) { span[x.L.id] = (span[x.L.id] || 0) + 1; });
   var seen = {};
-  html += mgTable(['Restaurant', 'Manager', 'Checklist', 'Time', 'Status', 'Sent by'], shown.map(function (x) {
+  html += mgTable(['Restaurant', 'Manager', 'Checklist', 'Time', 'Status', 'Sent by', 'Ticked'], shown.map(function (x) {
     var first = !seen[x.L.id]; seen[x.L.id] = 1;
     var n = span[x.L.id];
     return '<tr' + (first ? ' class="ckm-first"' : '') + '>' +
@@ -15623,11 +15645,15 @@ function renderTypeChecklists(t) {
       '<td>' + (!rows ? '<span class="muted">…</span>' : x.done ? pill('DONE', 'p-grn') : pill('PENDING', 'p-org')) +
         (rows && x.when ? '<div class="xs muted">' + h(x.when) + '</div>' : '') + '</td>' +
       '<td class="sm">' + (x.sub ? h(x.sub.userName) + '<div class="xs muted">' + h(ckTime(x.sub.submittedAt)) + ' IST</div>' : '—') + '</td>' +
+      '<td class="sm nowrap">' + (x.sub
+        ? ckTickedCell(x.sub) + '<div><button class="linkish xs b" data-a="ckView" data-x="' + h(x.sub.id) + '">View checklist</button></div>'
+        : '<span class="muted">—</span>') + '</td>' +
       '</tr>';
   }), MGMT_FILTER === 'done' ? 'No checklist is done yet for this day' : MGMT_FILTER === 'pending' ? 'Nothing is pending — every checklist is done' : 'Nothing matches');
 
   html += '<div class="card sm muted" style="margin-top:12px"><b>Done</b> means the checklist was sent: someone at that restaurant submitted it ' +
-    'inside its time window after ticking every item. <b>Sent by</b> shows who, and when. <b>Pending</b> means it has not been sent yet.</div>';
+    'inside its time window. <b>Sent by</b> shows who, and when; <b>Ticked</b> shows how many items they ticked — tap <b>View checklist</b> to see every item. ' +
+    '<b>Pending</b> means it has not been sent yet. This page updates by itself as checklists come in.</div>';
   $('#app').innerHTML = html + '<div style="height:20px"></div></div>';
   mgWireSearch(renderTypeServices);
 
@@ -15637,14 +15663,8 @@ function renderTypeChecklists(t) {
     CK_MDATE = d.value > today ? today : d.value;
     renderTypeServices();
   });
-  if (!rows && !failed) {
-    ckFetch(date, date, null, false).then(function () {
-      if (S.tab === 'manage' && S.manage === 'type' && S.manageType === t.id) renderTypeServices();
-    }, function (err) {
-      CK_MERR = { date: date, msg: err && err.offline ? CK_NET : 'Could not load the checklists for this day.' };
-      if (S.tab === 'manage' && S.manage === 'type' && S.manageType === t.id) renderTypeServices();
-    });
-  }
+  /* First load of this day, or anything older than 30 seconds: fetch again. */
+  if (!failed) ckMgRefresh(!rows);
 }
 function renderTypeServices() {
   var t = jobTypeById(S.manageType);
@@ -16504,6 +16524,9 @@ function ckPoll() {
     if (S.tab === 'chk' && ME.role !== 'staff') ckLoadRecords(true);
   }
   ckRefresh(false);
+  /* The Checklist page under Job Management: picks up newly sent
+     checklists (it fetches at most every 30 seconds). */
+  ckMgRefresh(false);
 }
 setInterval(ckPoll, 5000);
 document.addEventListener('visibilitychange', function () {
@@ -16637,6 +16660,8 @@ function ckFetch(from, to, loc, force) {
     .then(function (d) { CK.cache[key] = { rows: d.checklists || [], at: Date.now() }; return CK.cache[key].rows; });
 }
 function ckCached(from, to, loc) { var c = CK.cache[from + '|' + to + '|' + (loc || '')]; return c ? c.rows : null; }
+/* How long ago that range was fetched, in ms; Infinity when never. */
+function ckCacheAge(from, to, loc) { var c = CK.cache[from + '|' + to + '|' + (loc || '')]; return c ? Date.now() - c.at : Infinity; }
 function ckScopeLoc() { return S.loc && S.loc !== 'ALL' ? S.loc : null; }
 function ckScopeLocs() { return ckScopeLoc() ? [ckScopeLoc()] : visibleLocations().map(function (l) { return l.id; }); }
 function ckTodayIST() { return CHKW.istParts(ckNow()).ymd; }
