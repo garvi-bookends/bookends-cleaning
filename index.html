@@ -13199,7 +13199,7 @@ function ckHomeRefresh(force) {
 }
 function renderHome() {
   if (ME.role === 'staff') { renderSimpleHome(); return; }
-  setTimeout(function () { ckHomeRefresh(false); ckCityRefresh(); }, 0);
+  setTimeout(function () { ckHomeRefresh(false); }, 0);
   var wk = S.week, p = perm();
   var scope = (p.all && S.loc === 'ALL') ? null : S.loc;
   var overall = scope ? scoreFor(scope, wk).overall : globalScore(wk);
@@ -13279,7 +13279,6 @@ function renderHome() {
     /* city comparison */
     var A = cityScore('Surat', wk), B = cityScore('Ahmedabad', wk);
     html += '<div class="sec-t">Surat vs Ahmedabad</div><div class="card">' + cityCompare(A, B) +
-      '<div id="city_ck">' + ckCityHtml(wk) + '</div>' +
       '<button class="btn sec sm" style="width:100%;margin-top:12px" data-a="tab" data-x="rep">Full comparison report ›</button></div>';
   }
 
@@ -13302,69 +13301,6 @@ function statCard(v, l, c) { return '<div class="stat"><b style="color:' + c + '
 function tapStat(v, l, c, act, x) {
   return '<button class="stat" style="border-color:' + (v ? c : 'var(--line)') + ';cursor:pointer" data-a="' + act + '" data-x="' + x + '">' +
     '<b style="color:' + (v ? c : 'var(--mut)') + '">' + v + '</b><span>' + l + '</span></button>';
-}
-/* ---------- Surat vs Ahmedabad: checklists for the dashboard's week ----------
-   For each city: how many checklists its restaurants sent out of those due
-   so far (a window counts once it has opened), per checklist, and how many
-   windows closed with nothing sent. Read from the checklist records. */
-function ckWeekRange(wk) {
-  var from = ymd(weekStart(wk)), to = CHKW.addDaysYmd(from, 6), t = ckTodayIST();
-  return [from, to < t ? to : t];
-}
-function ckCityStats(city, wk, rows) {
-  var locs = LOCATIONS.filter(function (l) { return l.city === city; }).map(function (l) { return l.id; });
-  var r = ckWeekRange(wk), now = ckNow(), have = {};
-  rows.forEach(function (c) { have[c.loc + '|' + c.type + '|' + c.shiftDate] = 1; });
-  var out = { sent: 0, due: 0, missed: 0, by: {} };
-  CHKW.WINDOWS.forEach(function (w) { out.by[w.type] = { sent: 0, due: 0 }; });
-  if (r[0] > r[1]) return out;                     /* a week that has not started */
-  for (var d = r[0]; d <= r[1]; d = CHKW.addDaysYmd(d, 1)) {
-    CHKW.WINDOWS.forEach(function (w) {
-      var b = CHKW.shiftBounds(w, d);
-      if (now < b.startsAt) return;                /* not due yet */
-      locs.forEach(function (loc) {
-        var sent = !!have[loc + '|' + w.type + '|' + d];
-        out.due++; out.by[w.type].due++;
-        if (sent) { out.sent++; out.by[w.type].sent++; }
-        else if (now >= b.endsAt) out.missed++;
-      });
-    });
-  }
-  return out;
-}
-function ckCityHtml(wk) {
-  var r = ckWeekRange(wk), rows = r[0] <= r[1] ? ckCached(r[0], r[1], null) : [];
-  function pct(x) { return x.due ? Math.round(100 * x.sent / x.due) : 100; }
-  function row(label, a, b, better) {
-    return '<div class="row" style="padding:7px 0;border-top:1px solid var(--line)">' +
-      '<div class="sm" style="width:96px">' + label + '</div>' +
-      '<div class="grow center b" style="color:' + (better === 1 ? 'var(--grn)' : 'var(--ink)') + '">' + a + '</div>' +
-      '<div class="grow center b" style="color:' + (better === 2 ? 'var(--grn)' : 'var(--ink)') + '">' + b + '</div></div>';
-  }
-  if (!rows) return row('Checklists', '…', '…', 0);
-  var A = ckCityStats('Surat', wk, rows), B = ckCityStats('Ahmedabad', wk, rows);
-  function cmp(x, y) { return x > y ? 1 : y > x ? 2 : 0; }
-  var html = row('Checklists sent', A.sent + '/' + A.due + ' · ' + pct(A) + '%', B.sent + '/' + B.due + ' · ' + pct(B) + '%', cmp(pct(A), pct(B)));
-  CHKW.WINDOWS.forEach(function (w) {
-    var a = A.by[w.type], b = B.by[w.type];
-    html += row(CK_STYLE[w.type].icon + ' ' + CK_STYLE[w.type].short, a.sent + '/' + a.due, b.sent + '/' + b.due, cmp(pct(a), pct(b)));
-  });
-  return html + row('Checklists missed', A.missed, B.missed, cmp(B.missed, A.missed));
-}
-/* Loads that week's checklists (again after 60 seconds) while the
-   dashboard is open, and redraws the rows when something changed. */
-var CK_CBUSY = false;
-function ckCityRefresh() {
-  var el = document.getElementById('city_ck');
-  if (!el || CK_CBUSY || S.tab !== 'home') return;
-  var wk = S.week, r = ckWeekRange(wk);
-  if (r[0] > r[1] || ckCacheAge(r[0], r[1], null) < 60000) return;
-  CK_CBUSY = true;
-  ckFetch(r[0], r[1], null, true).then(function () {
-    CK_CBUSY = false;
-    var e = document.getElementById('city_ck');
-    if (e && S.tab === 'home' && S.week === wk) { var x = ckCityHtml(wk); if (e.innerHTML !== x) e.innerHTML = x; }
-  }, function () { CK_CBUSY = false; });
 }
 function cityCompare(A, B) {
   var rows = [['Overall score', A.overall, B.overall, '%'], ['Deep cleaning', A.clean, B.clean, '%'],
@@ -16660,8 +16596,6 @@ function ckPoll() {
   ckHomeRefresh(false);
   var hk = document.getElementById('home_ck');
   if (hk && S.tab === 'home') { var hh = ckHomeHtml(); if (hk.innerHTML !== hh) hk.innerHTML = hh; }
-  /* The checklist rows of Surat vs Ahmedabad. */
-  ckCityRefresh();
 }
 setInterval(ckPoll, 5000);
 document.addEventListener('visibilitychange', function () {
