@@ -43,13 +43,15 @@ class TabDef {
   const TabDef(this.key, this.label, this.icon);
 }
 
+/// Same order as the website's tabbar(): Home, Checklist, Cleaning, Expiry,
+/// Labels, then Management (Super Admin only).
 const _allTabs = [
-  TabDef('manage', 'Manage', Icons.shield_outlined),
   TabDef('home', 'Home', Icons.home_outlined),
   TabDef('chk', 'Checklist', Icons.fact_check_outlined),
   TabDef('clean', 'Cleaning', Icons.cleaning_services_outlined),
   TabDef('exp', 'Expiry', Icons.event_note_outlined),
   TabDef('lab', 'Labels', Icons.sell_outlined),
+  TabDef('manage', 'Manage', Icons.shield_outlined),
 ];
 
 const _typeTab = {'cleaning': 'clean', 'labelling': 'lab', 'labeling': 'lab', 'checklist': 'chk'};
@@ -80,7 +82,9 @@ class _ShellState extends State<Shell> {
   @override
   void initState() {
     super.initState();
-    nav.tab = S.perm.superadmin ? 'manage' : 'home';
+    // Everyone, the Super Admin included, starts on Home.
+    nav.tab = 'home';
+    nav.manage = 'home';
   }
 
   /// Kitchen choices that make sense for this tab (router fixes in render()).
@@ -156,13 +160,13 @@ class _ShellState extends State<Shell> {
                 ),
         );
         return PopScope(
-          canPop: nav.tab == (S.perm.superadmin ? 'manage' : 'home') && nav.manage == 'home',
+          canPop: nav.tab == 'home',
           onPopInvokedWithResult: (did, _) {
             if (did) return;
             if (nav.tab == 'manage' && nav.manage != 'home') {
               nav.go('manage', manageTo: 'home');
             } else {
-              nav.go(S.perm.superadmin ? 'manage' : 'home');
+              nav.go('home');
             }
           },
           child: _SignOutScope(onSignOut: widget.onSignOut, child: scaffold),
