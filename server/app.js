@@ -109,6 +109,12 @@ app.use(function (req, res, next) {
   next();
 });
 
+/* One-time data fixes run before the first API request is answered. */
+var oneTimeFixes = require('./db/oneTimeFixes');
+app.use('/api', function (req, res, next) {
+  oneTimeFixes.ready().then(function () { next(); });
+});
+
 /* --------------------------------------------------------------------------
    Routes
    -------------------------------------------------------------------------- */
