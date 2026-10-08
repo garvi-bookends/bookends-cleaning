@@ -13140,8 +13140,54 @@ function pendingSignupsCard() {
   return out;
 }
 
+/* ---------- Home: how many restaurants have sent each checklist ----------
+   One tile per checklist, for its current shift (or the one that just
+   ended — after midnight, Closing still counts the evening's shift).
+   Green: every restaurant has sent it. Orange: its window is open. Red: the
+   window has closed with restaurants missing. Tapping opens Checklist. */
+function ckHomeShifts() {
+  var now = ckNow();
+  return CHKW.WINDOWS.map(function (w) { return { w: w, date: CHKW.windowState(w, now).shiftDate }; });
+}
+function ckHomeRange() {
+  var d = ckHomeShifts().map(function (x) { return x.date; }).sort();
+  return [d[0], d[d.length - 1]];
+}
+function ckHomeHtml() {
+  if (!tabAllowed('chk')) return '';
+  var p = perm(), scope = (p.all && S.loc === 'ALL') ? null : S.loc;
+  var locs = scope ? [scope] : visibleLocations().map(function (l) { return l.id; });
+  var r = ckHomeRange(), rows = ckCached(r[0], r[1], null), now = ckNow();
+  return '<div class="sec-t">Checklists · sent / restaurants</div><div class="grid3">' + ckHomeShifts().map(function (x) {
+    var sent = rows ? rows.filter(function (c) {
+      return c.type === x.w.type && c.shiftDate === x.date && locs.indexOf(c.loc) > -1;
+    }).length : null;
+    var b = CHKW.shiftBounds(x.w, x.date);
+    var col = sent === null ? 'var(--mut)' : sent >= locs.length ? 'var(--grn)' :
+      now >= b.endsAt ? 'var(--red)' : now >= b.startsAt ? 'var(--org)' : 'var(--mut)';
+    return '<button class="stat" style="border-color:' + col + ';cursor:pointer" data-a="tab" data-x="chk">' +
+      '<b style="color:' + col + '">' + (sent === null ? '…' : sent) + '/' + locs.length + '</b>' +
+      '<span>' + CK_STYLE[x.w.type].icon + ' ' + CK_STYLE[x.w.type].short + '</span></button>';
+  }).join('') + '</div>';
+}
+/* Fetches those shifts again (at most every 30 seconds) while Home is open,
+   and redraws the tiles only when a checklist was sent meanwhile. */
+var CK_HBUSY = false;
+function ckHomeRefresh(force) {
+  if (CK_HBUSY || S.tab !== 'home' || !ME || ME.role === 'staff' || !tabAllowed('chk')) return;
+  var r = ckHomeRange();
+  if (!force && ckCacheAge(r[0], r[1], null) < 30000) return;
+  var before = JSON.stringify(ckCached(r[0], r[1], null));
+  CK_HBUSY = true;
+  ckFetch(r[0], r[1], null, true).then(function (rows) {
+    CK_HBUSY = false;
+    var el = document.getElementById('home_ck');
+    if (el && S.tab === 'home' && JSON.stringify(rows) !== before) el.innerHTML = ckHomeHtml();
+  }, function () { CK_HBUSY = false; });
+}
 function renderHome() {
   if (ME.role === 'staff') { renderSimpleHome(); return; }
+  setTimeout(function () { ckHomeRefresh(false); }, 0);
   var wk = S.week, p = perm();
   var scope = (p.all && S.loc === 'ALL') ? null : S.loc;
   var overall = scope ? scoreFor(scope, wk).overall : globalScore(wk);
@@ -13184,6 +13230,8 @@ function renderHome() {
     tapStat(agg.rej, 'Rejected', 'var(--red)', 'goclean', 'rejected') +
     tapStat(agg.nop, 'Missing photos', 'var(--org)', 'goclean', 'nophoto') +
     tapStat(crit, 'Urgent alerts', 'var(--blue)', 'alerts', '') + '</div>';
+
+  html += '<div id="home_ck">' + ckHomeHtml() + '</div>';
 
   html += '</div></div>';
   /* quick actions */
@@ -16537,6 +16585,10 @@ function ckPoll() {
   /* The Checklist page under Job Management: picks up newly sent
      checklists (it fetches at most every 30 seconds). */
   ckMgRefresh(false);
+  /* The checklist tiles on Home. */
+  ckHomeRefresh(false);
+  var hk = document.getElementById('home_ck');
+  if (hk && S.tab === 'home') { var hh = ckHomeHtml(); if (hk.innerHTML !== hh) hk.innerHTML = hh; }
 }
 setInterval(ckPoll, 5000);
 document.addEventListener('visibilitychange', function () {
