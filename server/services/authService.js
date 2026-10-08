@@ -86,7 +86,7 @@ function login(rawUid, rawPassword, ctx) {
         return userModel.clearFailedAttempts(user.id).then(function () {
           userModel.recordLoginAttempt({ uid: uid, userId: user.id, success: false, reason: 'pending', ip: ctx.ip, userAgent: ctx.userAgent });
           throw authError(
-            'Your account is waiting for approval by the Super Admin (Husen). You can sign in once it is approved.',
+            'Your account is waiting for approval by the Super Admin. You can sign in once it is approved.',
             'ACCOUNT_PENDING', 403
           );
         });

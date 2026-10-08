@@ -72,7 +72,7 @@ There are 8 kitchens in 2 cities. All of them use electric equipment only (no ga
 
 | Role | Who it is for | Sees | Can approve cleaning | Can manage users | Read-only |
 |---|---|---|---|---|---|
-| **Super Admin** | One owner account (Husen) | All kitchens | ✅ | ✅ (plus sign-up approvals and password resets) | — |
+| **Super Admin** | One owner account (Admin EXE, login `adminexe`) | All kitchens | ✅ | ✅ (plus sign-up approvals and password resets) | — |
 | **Execution Head** | Head office | All kitchens | ✅ | ✅ | — |
 | **Assistant Execution Head** | Head office | All kitchens | ✅ | ✅ | — |
 | **Admin** | Office admin | All kitchens | ✅ | ✅ | — |
@@ -91,7 +91,7 @@ There are 8 kitchens in 2 cities. All of them use electric equipment only (no ga
   - nobody can delete or demote themselves, and the last user-manager can't be removed
 - **Kitchen Staff don't see the Reports tab.**
 
-**Accounts at launch** are Husen Khan (Execution Head), Manish and Rutvik (Assistant Execution Heads), one Location Manager per kitchen, and the Super Admin account.
+**Accounts at launch** are the Super Admin account (Admin EXE) and one Location Manager per kitchen.
 
 ---
 

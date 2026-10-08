@@ -137,8 +137,8 @@ var config = {
   },
 
   seed: {
-    adminUid: optional('SEED_ADMIN_UID', 'husen'),
-    adminName: optional('SEED_ADMIN_NAME', 'Husen Khan'),
+    adminUid: optional('SEED_ADMIN_UID', 'adminexe'),
+    adminName: optional('SEED_ADMIN_NAME', 'Admin EXE'),
     adminPassword: optional('SEED_ADMIN_PASSWORD', '')
   }
 };

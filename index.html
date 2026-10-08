@@ -10584,7 +10584,7 @@ window.onerror = function (msg, src, line) {
     '<div style="font-size:38px">⚠️</div>' +
     '<h2 style="margin:8px 0 6px;font-size:19px">The app could not start</h2>' +
     '<p style="color:#626c87;font-size:14px;line-height:1.5">Please close this tab and open the link again. ' +
-    'If it keeps happening, send this message to Husen:</p>' +
+    'If it keeps happening, send this message to the Super Admin:</p>' +
     '<pre style="background:#f3f5fb;padding:12px;border-radius:10px;font-size:11px;white-space:pre-wrap;overflow:auto">' +
     String(msg) + '\nline ' + line + '</pre></div>';
 };
@@ -10911,7 +10911,7 @@ function assignableRoles() {
 /* `approve` belongs to the Super Admin alone. Everyone else records the work
    and sends it; nobody signs off a job they did themselves. */
 var ROLES = {
-  /* Exactly one account holds this (husen). It is the only one that can approve
+  /* Exactly one account holds this (adminexe). It is the only one that can approve
      or reject self sign-ups. It is set on the server with
      `npm run set-superadmin`, never from inside the app. */
   superadmin: { label: 'Super Admin',            all: true, approve: true, edit: true, manage: true, readonly: false, superadmin: true },
@@ -12902,7 +12902,7 @@ function renderSignup() {
     '<button class="btn" id="s_btn" data-a="doSignup">Create account</button>' +
     '</div>' +
     offlineNote() +
-    '<div class="authnote">The Super Admin (Husen) approves your account and sets what you can do. You can sign in once it is approved.</div>' +
+    '<div class="authnote">The Super Admin approves your account and sets what you can do. You can sign in once it is approved.</div>' +
     '<div class="authlinks"><button data-a="backToLogin">I already have an account</button></div>');
   var f = document.getElementById(dr.name ? 's_pw' : 's_name'); if (f) f.focus();
 }
@@ -12950,7 +12950,7 @@ function renderSignupDone(u) {
     '<div class="b" style="font-size:18px;margin-top:6px">Account created</div>' +
     '<div class="sm muted" style="margin-top:4px">Thanks, ' + h(u.name.split(' ')[0]) + '.</div>' +
     '<div class="card" style="margin-top:14px;text-align:left"><div class="xs muted b">YOUR USERNAME</div><div class="b" style="font-size:20px">' + h(u.uid) + '</div></div>' +
-    '<div class="sm muted">Your account now needs to be approved by the Super Admin (Husen). Once it is, sign in with this username and the password you just chose.</div></div>' +
+    '<div class="sm muted">Your account now needs to be approved by the Super Admin. Once it is, sign in with this username and the password you just chose.</div></div>' +
     '<button class="btn" data-a="backToLogin">Back to sign in</button>');
 }
 
@@ -12967,7 +12967,7 @@ function renderForgot() {
   authShell(
     '<div class="card">' +
     '<div class="autht">Forgot your password?</div>' +
-    '<div class="auths">Enter your username. The Super Admin (Husen) will set a temporary password for you.</div>' +
+    '<div class="auths">Enter your username. The Super Admin will set a temporary password for you.</div>' +
     '<label class="f"><span>Username</span><input class="inp" id="f_uid" value="' + h(LOGIN_UID) + '" placeholder="e.g. rahul" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"></label>' +
     (FORGOT_ERR ? '<div class="card" style="background:#fde8e9;border-color:#f7c9cc;margin:0 0 12px"><b class="sm">' + h(FORGOT_ERR) + '</b></div>' : '') +
     '<button class="btn" id="f_btn" data-a="doForgot">Ask for a new password</button></div>' +
@@ -14492,7 +14492,7 @@ function renderUsersSheet(users) {
      decides. The server enforces this; the note just says who to ask. */
   if (pending.length && !perm().superadmin) {
     body += '<div class="card sm" style="background:#fff7e2;border-color:#f6dfa3"><b>' + pending.length + ' new sign-up' + (pending.length === 1 ? '' : 's') +
-      ' waiting for approval</b><div class="muted" style="margin-top:4px">Only the Super Admin (Husen) can approve or reject them: ' +
+      ' waiting for approval</b><div class="muted" style="margin-top:4px">Only the Super Admin can approve or reject them: ' +
       pending.map(function (u) { return h(u.name) + ' (' + h(u.uid) + ')'; }).join(', ') + '.</div></div>';
   }
   if (pending.length && perm().superadmin) {
@@ -14534,7 +14534,7 @@ function renderUsersSheet(users) {
           /* The Super Admin's row has no controls: its role is fixed on the
              server, and nobody else may reset or remove it. The server
              refuses those anyway; this just avoids offering buttons that fail.
-             Husen changes his own password from "Change my password". */
+             The Super Admin changes their own password from "Change my password". */
           (ROLES[u.role] && ROLES[u.role].superadmin
             ? '<span class="xs b" style="color:var(--brand);padding:6px 10px">Super Admin</span>'
             : '<select class="inp" style="width:118px;min-height:42px;font-size:12.5px;padding:6px 8px" data-a="chrole" data-x="' + u.id + '">' +

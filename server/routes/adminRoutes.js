@@ -38,7 +38,7 @@ function knownJobTypes(ids) {
 var router = express.Router();
 
 /* The Super Admin can only be changed by the Super Admin. Without this an
-   Execution Head could reset husen's password and sign in as husen, which
+   Execution Head could reset the Super Admin's password and sign in as them, which
    would make "only the Super Admin approves sign-ups" meaningless. */
 function protectsSuperadmin(req, res, target) {
   if (target.role === userModel.SUPERADMIN && req.auth.role !== userModel.SUPERADMIN) {
