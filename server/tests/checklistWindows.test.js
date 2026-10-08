@@ -35,7 +35,7 @@ function ist(ymd, hhmm) {
 
 var CASES = {
   LUNCH: [
-    ['11:29', false], ['11:30', true], ['12:00', true], ['13:29', true], ['13:30', false]
+    ['10:29', false], ['10:30', true], ['11:30', true], ['12:00', true], ['13:29', true], ['13:30', false]
   ],
   DINNER: [
     ['16:59', false], ['17:00', true], ['17:30', true], ['17:59', true], ['18:00', false]
@@ -76,16 +76,16 @@ var CASES = {
 
   test(name + ': next opening time when closed', function () {
     var lunch = W.byType('LUNCH');
-    assert.strictEqual(W.windowState(lunch, ist('2026-09-30', '09:00')).nextOpensAt, ist('2026-09-30', '11:30'));
-    assert.strictEqual(W.windowState(lunch, ist('2026-09-30', '14:00')).nextOpensAt, ist('2026-10-01', '11:30'));
+    assert.strictEqual(W.windowState(lunch, ist('2026-09-30', '09:00')).nextOpensAt, ist('2026-09-30', '10:30'));
+    assert.strictEqual(W.windowState(lunch, ist('2026-09-30', '14:00')).nextOpensAt, ist('2026-10-01', '10:30'));
     assert.strictEqual(W.windowState(W.byType('CLOSING'), ist('2026-09-30', '01:00')).nextOpensAt, ist('2026-09-30', '22:00'));
     assert.strictEqual(W.windowState(lunch, ist('2026-09-30', '12:00')).nextOpensAt, null);
   });
 
   test(name + ': uses IST regardless of the machine time zone', function () {
-    /* 06:00 UTC is 11:30 IST. */
-    assert.strictEqual(W.windowState(W.byType('LUNCH'), Date.UTC(2026, 8, 30, 6, 0)).open, true);
-    assert.strictEqual(W.windowState(W.byType('LUNCH'), Date.UTC(2026, 8, 30, 5, 59)).open, false);
+    /* 05:00 UTC is 10:30 IST. */
+    assert.strictEqual(W.windowState(W.byType('LUNCH'), Date.UTC(2026, 8, 30, 5, 0)).open, true);
+    assert.strictEqual(W.windowState(W.byType('LUNCH'), Date.UTC(2026, 8, 30, 4, 59)).open, false);
   });
 
   test(name + ': labels', function () {
