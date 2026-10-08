@@ -15580,6 +15580,43 @@ function ckManagerOf(L) {
     .map(function (u) { return u.name; });
   return names.length ? names.join(', ') : (L.head || '');
 }
+/* The three compulsory checklists and their fixed times, always shown at the
+   top of the page whatever the filter or search below: what every
+   restaurant must send each day, when, whether it can be sent right now,
+   and how many restaurants have sent it for the day being looked at. */
+function ckScheduleHtml(list, rows, date) {
+  var now = ckNow(), today = ckTodayIST();
+  return '<div class="sec-t" style="margin-top:14px">Compulsory checklists · every restaurant · every day</div>' +
+    '<div class="card pad0">' + CHKW.WINDOWS.map(function (w) {
+      var st = CK_STYLE[w.type], s = CHKW.windowState(w, now);
+      var next = s.nextOpensAt ? CHKW.istParts(s.nextOpensAt).ymd : null;
+      var state = s.open
+        ? '<b style="color:var(--grn)">Open now</b> <span class="muted">· closes at ' + CHKW.fmtMinutes(w.end) + '</span>'
+        : '<span class="muted">Closed · opens ' + (next && next !== today ? 'tomorrow ' : '') + 'at ' + CHKW.fmtMinutes(w.start) + '</span>';
+      var mine = list.filter(function (x) { return x.w.type === w.type; });
+      var sent = mine.filter(function (x) { return x.done; }).length;
+      return '<div class="row" style="padding:12px 14px;border-bottom:1px solid var(--line);gap:12px">' +
+        '<span class="ck-ic" style="background:' + st.bg + '">' + st.icon + '</span>' +
+        '<div class="grow"><div class="b">' + h(w.label) + ' <span class="pill p-red" style="margin-left:4px">COMPULSORY</span></div>' +
+        '<div class="ck-time">' + ckRangeText(w) + ' IST · every day</div>' +
+        '<div class="xs">' + state + '</div></div>' +
+        '<div class="center" style="min-width:74px"><div class="b" style="font-size:18px;color:' +
+          (!rows ? 'var(--mut)' : sent === mine.length ? 'var(--grn)' : 'var(--org)') + '">' +
+          (rows ? sent : '…') + '/' + mine.length + '</div>' +
+        '<div class="xs muted">sent' + (date === today ? ' today' : ' ' + h(fmtD(date))) + '</div></div></div>';
+    }).join('') +
+    '<div style="padding:10px 14px"><button class="btn sec sm" data-a="ckMgItems">📋 See the ' + ckFormCount() + ' items on every checklist</button></div>' +
+    '</div>';
+}
+/* The questions every checklist asks, as a blank form. */
+function ckItemsSheet() {
+  openSheet('Checklist items · ' + ckFormCount(),
+    '<div class="card sm muted">The same ' + ckFormCount() + ' items make up the Lunch, Dinner and Closing checklists. ' +
+    'Each must be sent inside its time window; items left unticked are recorded as not done.</div>' +
+    ckAnswersHtml(CK_FORM.reduce(function (a, g) {
+      return a.concat(g[1].map(function (q) { return { section: g[0], question: q, done: false }; }));
+    }, [])), 'ck-sheet');
+}
 function renderTypeChecklists(t) {
   var today = ckTodayIST();
   var date = CK_MDATE || today;
@@ -15609,6 +15646,7 @@ function renderTypeChecklists(t) {
     html += '<div class="card sm" style="background:#fde8e9;border-color:#f7c9cc;margin-top:12px"><b>This job type is switched off.</b> ' +
       'Nobody can be given checklist work while it is.</div>';
   }
+  html += ckScheduleHtml(list, rows, date);
   html += '<label class="f" style="margin-top:12px"><span>Date</span>' +
     '<input class="inp" id="ckm_date" type="date" value="' + h(date) + '" max="' + h(today) + '"></label>';
   html += mgSearchBox(MGMT_Q, 'Restaurant, manager or checklist');
@@ -16522,6 +16560,8 @@ function ckPoll() {
     CK.cache = {};
     ckLoadStatus(true);
     if (S.tab === 'chk' && ME.role !== 'staff') ckLoadRecords(true);
+    /* A window opened or closed: the schedule card says so. */
+    if (S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist' && !document.querySelector('#modal .sheet')) renderTypeServices();
   }
   ckRefresh(false);
   /* The Checklist page under Job Management: picks up newly sent
@@ -16911,6 +16951,7 @@ document.addEventListener('click', function (ev) {
     case 'mgJobs': MGMT_JOBS = x; render(); break;
     case 'mgFilter': MGMT_FILTER = x; render(); break;
     case 'ckMgRetry': CK_MERR = null; render(); break;
+    case 'ckMgItems': ckItemsSheet(); break;
     case 'openType': if (!perm().superadmin) break; S.manage = 'type'; S.manageType = x; MGMT_Q = ''; MGMT_FILTER = 'all'; render(); break;
     case 'addJobType': if (!perm().superadmin) break; JOBT_ERR = ''; closeSheet(); jobTypeForm(null); break;
     case 'editJobType': if (!perm().superadmin) break; JOBT_ERR = ''; closeSheet(); jobTypeForm(x); break;
