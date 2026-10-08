@@ -64,28 +64,16 @@ function login(rawUid, rawPassword, ctx) {
       throw authError(GENERIC_LOGIN_ERROR, 'INVALID_CREDENTIALS');
     }
 
-    /* Locked out after too many wrong guesses. This one IS specific, because
-       the user needs to know waiting will fix it, and it only ever appears
-       after the account has already been identified by repeated attempts. */
-    if (record.lockedUntil && new Date(record.lockedUntil).getTime() > Date.now()) {
-      var minutes = Math.max(1, Math.ceil((new Date(record.lockedUntil).getTime() - Date.now()) / 60000));
-      userModel.recordLoginAttempt({ uid: uid, userId: user.id, success: false, reason: 'locked', ip: ctx.ip, userAgent: ctx.userAgent });
-      throw authError(
-        'Too many failed attempts. Try again in ' + minutes + ' minute' + (minutes === 1 ? '' : 's') +
-        ', or ask Husen, Manish or Rutvik to reset your password.',
-        'ACCOUNT_LOCKED', 423
-      );
-    }
+    /* No account lockout: a wrong password never locks anyone out for a
+       period of time. Every failed attempt is still recorded in the sign-in
+       audit, and the per-IP rate limit on /api/auth still applies. */
 
     /* Step 2: verify the password against the stored hash (req 4).
        The plaintext is never stored, logged or compared with ===. */
     return passwords.verify(password, record.passwordHash).then(function (ok) {
       if (!ok) {
-        return userModel.registerFailedAttempt(user.id, config.lockout.maxFailedAttempts, config.lockout.lockoutMinutes)
-          .then(function () {
-            userModel.recordLoginAttempt({ uid: uid, userId: user.id, success: false, reason: 'bad_password', ip: ctx.ip, userAgent: ctx.userAgent });
-            throw authError(GENERIC_LOGIN_ERROR, 'INVALID_CREDENTIALS');
-          });
+        userModel.recordLoginAttempt({ uid: uid, userId: user.id, success: false, reason: 'bad_password', ip: ctx.ip, userAgent: ctx.userAgent });
+        throw authError(GENERIC_LOGIN_ERROR, 'INVALID_CREDENTIALS');
       }
 
       /* A self sign-up that no admin has approved yet.
