@@ -13257,7 +13257,9 @@ function renderHome() {
   html += '<div class="btnrow" style="margin-bottom:10px">' + quick.join('') + '</div>';
 
   var quick2 = [];
-  if (p.approve && tabAllowed('clean')) quick2.push('<button class="btn sec" data-a="tab" data-x="clean">☑ Approvals (' + pendingApprovals().length + ')</button>');
+  /* Approving happens in Task Review, so that is where this goes, showing
+     what is waiting — the same count it opens to. */
+  if (p.approve) quick2.push('<button class="btn sec" data-a="goReview">☑ Approvals (' + tasksAwaitingApproval().length + ')</button>');
   else if (!p.approve && tabAllowed('lab')) quick2.push('<button class="btn sec" data-a="tab" data-x="lab">🏷 Print label</button>');
   if (quick2.length) html += '<div class="btnrow">' + quick2.join('') + '</div>';
 
@@ -13312,13 +13314,6 @@ function cityCompare(A, B) {
       '<div class="sm" style="width:96px">' + r[0] + '</div>' +
       '<div class="grow center b" style="color:' + (better === 1 ? 'var(--grn)' : 'var(--ink)') + '">' + r[1] + r[3] + '</div>' +
       '<div class="grow center b" style="color:' + (better === 2 ? 'var(--grn)' : 'var(--ink)') + '">' + r[2] + r[3] + '</div></div>';
-  });
-  return out;
-}
-function pendingApprovals() {
-  var wk = S.week, out = [];
-  visibleLocations().forEach(function (L) {
-    tasksFor(L.id, wk).forEach(function (t) { if (t.status === 'completed' && !t.approved) out.push(t); });
   });
   return out;
 }
@@ -16982,6 +16977,14 @@ document.addEventListener('click', function (ev) {
       break;
     }
     case 'mgmtJobsBack': S.manage = 'jobs'; MGMT_Q = ''; MGMT_FILTER = 'all'; render(); break;
+    /* Approvals on the dashboard: Task Review, showing what is waiting. */
+    case 'goReview': {
+      if (!perm().superadmin) break;
+      closeSheet();
+      S.tab = 'manage'; S.manage = 'review'; MGMT_Q = ''; MGMT_FILTER = 'waiting';
+      render(); pullJobTypes();
+      break;
+    }
     case 'mgJobs': MGMT_JOBS = x; render(); break;
     case 'mgFilter': MGMT_FILTER = x; render(); break;
     case 'ckMgRetry': CK_MERR = null; render(); break;
