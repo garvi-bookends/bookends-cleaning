@@ -79,6 +79,9 @@ if (process.env.VERCEL) {
   var steps = [['migrate', 'server/scripts/migrate.js']];
   if (env.SEED_ADMIN_PASSWORD) steps.push(['seed', 'server/scripts/seed.js']);
   else console.log('[build] SEED_ADMIN_PASSWORD not set — skipping account creation');
+  /* The way back in for a locked-out Super Admin. Remove the variable once
+     signed in, or every deployment sets the password back. */
+  if (env.SUPERADMIN_RESET_PASSWORD) steps.push(['reset-superadmin', 'server/scripts/resetSuperadmin.js']);
 
   steps.forEach(function (s) {
     console.log('[build] running ' + s[0] + '…');

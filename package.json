@@ -15,6 +15,7 @@
     "create-user": "node server/scripts/createUser.js",
     "set-superadmin": "node server/scripts/setSuperadmin.js",
     "set-all-passwords": "node server/scripts/setAllPasswords.js",
+    "reset-superadmin": "node server/scripts/resetSuperadmin.js",
     "db:start": "node server/scripts/db.js start",
     "db:stop": "node server/scripts/db.js stop",
     "db:status": "node server/scripts/db.js status",
