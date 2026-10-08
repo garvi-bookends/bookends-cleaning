@@ -38,7 +38,7 @@ var CASES = {
     ['11:29', false], ['11:30', true], ['12:00', true], ['13:29', true], ['13:30', false]
   ],
   DINNER: [
-    ['16:59', false], ['17:00', true], ['17:30', true], ['17:59', true], ['18:00', false]
+    ['12:59', false], ['13:00', true], ['15:00', true], ['17:00', true], ['17:59', true], ['18:00', false]
   ],
   CLOSING: [
     ['21:00', false], ['21:59', false], ['22:00', true], ['22:30', true], ['23:00', true],

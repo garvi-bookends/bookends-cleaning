@@ -27,7 +27,7 @@ var DAY_MS = 86400000;
 
 var WINDOWS = [
   { type: 'LUNCH',   label: 'Lunch Checklist',   start: 11 * 60 + 30, end: 13 * 60 + 30 },
-  { type: 'DINNER',  label: 'Dinner Checklist',  start: 17 * 60,      end: 18 * 60 },
+  { type: 'DINNER',  label: 'Dinner Checklist',  start: 13 * 60,      end: 18 * 60 },
   { type: 'CLOSING', label: 'Closing Checklist', start: 22 * 60,      end: 1 * 60 }
 ];
 
