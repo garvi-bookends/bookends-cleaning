@@ -36,7 +36,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 /* ---------- header ---------- */
 .hdr{position:sticky;top:0;z-index:50;background:linear-gradient(100deg,#1e2a78 0%,#2a3a9e 55%,#3b4fd8 100%);color:#fff;box-shadow:0 4px 18px rgba(30,42,120,.22);padding:calc(env(safe-area-inset-top) + 10px) 14px 12px}
-.hdr-row{display:flex;align-items:center;gap:10px}
+.hdr-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .hdr h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.3px;flex:1;line-height:1.15}
 .hdr h1 small{display:block;font-size:11px;font-weight:500;opacity:.72;letter-spacing:.6px;text-transform:uppercase}
 .iconbtn{background:rgba(255,255,255,.14);border:0;color:#fff;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:19px;cursor:pointer}
@@ -48,7 +48,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .ck-ic svg{width:24px;height:24px;fill:var(--brand)}
 .badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:10px;font-weight:800;min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 4px;border:2px solid var(--brand)}
 .rel{position:relative}
-.locbar{margin-top:10px}
+/* On a phone the picker is its own full-width row under the title. */
+.locbar{order:10;flex:1 0 100%;margin-top:2px}
 .locbar select{width:100%;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);color:#fff;padding:11px 12px;border-radius:12px;font-size:15px;font-weight:600;appearance:none;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>");
   background-repeat:no-repeat;background-position:right 12px center}
@@ -338,7 +339,15 @@ a.btn{text-decoration:none}
 /* ---------- laptop / desktop ---------- */
 @media (min-width:900px){
   #app{max-width:none;padding:0 0 40px 232px}
-  .hdr{padding-left:22px;padding-right:22px}
+  /* One clean row: title on the left, then the location picker, then the
+     buttons. Flat brand navy, the same as the sidebar. */
+  .hdr{padding:12px 26px;background:#1e2a78;box-shadow:0 1px 0 rgba(255,255,255,.06),0 2px 10px rgba(20,28,88,.12)}
+  .hdr-row{flex-wrap:nowrap;gap:12px;min-height:46px}
+  .hdr h1{font-size:18px;letter-spacing:.3px}
+  .hdr h1 small{font-size:11.5px;margin-top:3px;opacity:.7}
+  .locbar{order:0;flex:0 0 300px;margin:0}
+  .locbar select{padding:10px 36px 10px 14px;font-size:14px;border-radius:10px}
+  .hdr .iconbtn{width:42px;height:42px;border-radius:10px}
   /* Pages use the whole width beside the sidebar. Only a very wide screen
      (past 1760px of content) gets a cap, and then the page is centred, so
      there is never an empty band down one side. */
@@ -12781,10 +12790,11 @@ function header(title, sub) {
   }
   return '<div class="hdr"><div class="hdr-row">' +
     '<h1>' + h(title) + '<small>' + h(sub) + (perm().manage ? cloudDot() : '') + '</small></h1>' +
+    locSel +
     '<button class="iconbtn thbtn" data-a="theme" title="' + (isDark() ? 'Light mode' : 'Dark mode') + '">' + ic(isDark() ? 'sun' : 'moon') + '</button>' +
     '<button class="iconbtn rel" data-a="alerts">' + ic('bell') + (al ? '<span class="badge">' + (al > 99 ? '99+' : al) + '</span>' : '') + '</button>' +
     '<button class="iconbtn" data-a="me">' + h(initials(ME.name)) + '</button>' +
-    '</div>' + locSel + '</div>';
+    '</div></div>';
 }
 /* Which section a job type's work is done in. The app has always had a
    Cleaning, a Labelling and an Expiry Date screen, and the three built-in job
