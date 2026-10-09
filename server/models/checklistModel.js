@@ -94,11 +94,13 @@ function listForShifts(shiftDates, loc) {
     .then(function (r) { return r.rows.map(function (row) { return toApi(row); }); });
 }
 
-/* The admin list. `loc` limits it to one kitchen; null means every kitchen. */
+/* The records list. `loc` limits it to one kitchen; null means every
+   kitchen. `userId` limits it to what one person sent. */
 function list(opts) {
   var params = [opts.from, opts.to];
   var sql = 'select ' + COLUMNS + ' from app_checklists where shift_date between $1::date and $2::date';
   if (opts.loc) { params.push(opts.loc); sql += ' and loc = $' + params.length; }
+  if (opts.userId) { params.push(opts.userId); sql += ' and user_id = $' + params.length; }
   sql += ' order by shift_date desc, submitted_at desc limit 2000';
   return db.query(sql, params).then(function (r) {
     return r.rows.map(function (row) { return toApi(row, { list: true }); });

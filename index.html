@@ -16228,13 +16228,13 @@ function renderChecklists() {
   html += ckNotifyCardHtml();
   html += '<div class="card sm muted" style="margin-top:12px">Each checklist opens only during its time window. ' +
     'Press <b>Open Checklist</b>, tick the items you have done and submit.</div>';
-  if (ckSeesRecords()) html += '<div id="ck_records">' + ckRecordsHtml() + '</div>';
+  html += '<div id="ck_records">' + ckRecordsHtml() + '</div>';
   html += '<div style="height:20px"></div></div>';
   $('#app').innerHTML = html;
   tabbar();
   CK.sig = ckSig();
   ckLoadStatus(false);
-  if (ckSeesRecords()) ckLoadRecords(false);
+  ckLoadRecords(false);
 }
 function ckClockHtml() {
   var n = CHKW.istParts(ckNow());
@@ -16300,7 +16300,7 @@ function ckPoll() {
     CK.sig = sig;
     CK.cache = {};
     ckLoadStatus(true);
-    if (ckSeesRecords() && document.getElementById('ck_records')) ckLoadRecords(true);
+    if (document.getElementById('ck_records')) ckLoadRecords(true);
   }
   ckRefresh(false);
   /* The records list, on whichever page shows it: picks up newly sent
@@ -16584,11 +16584,12 @@ function ckFetch(from, to, loc, force) {
 function ckCached(from, to, loc) { var c = CK.cache[from + '|' + to + '|' + (loc || '')]; return c ? c.rows : null; }
 /* How long ago that range was fetched, in ms; Infinity when never. */
 function ckCacheAge(from, to, loc) { var c = CK.cache[from + '|' + to + '|' + (loc || '')]; return c ? Date.now() - c.at : Infinity; }
-function ckScopeLoc() { return S.loc && S.loc !== 'ALL' ? S.loc : null; }
+function ckScopeLoc() { return ckSeesRecords() && S.loc && S.loc !== 'ALL' ? S.loc : null; }
 function ckScopeLocs() { return ckScopeLoc() ? [ckScopeLoc()] : visibleLocations().map(function (l) { return l.id; }); }
 function ckTodayIST() { return CHKW.istParts(ckNow()).ymd; }
-/* Checklist records are for Admin EXE (the Super Admin) alone. Everyone
-   else still sends checklists and sees their own sheet once sent. */
+/* Every restaurant's checklist records are for Admin EXE (the Super Admin)
+   alone. Everyone else sees the checklists they sent themselves — the
+   server hands them nothing more. */
 function ckSeesRecords() { return !!(ME && ME.role === 'superadmin'); }
 var CK_RANGES = [['today', 'Today'], ['yesterday', 'Yesterday'], ['7d', 'Last 7 days'], ['30d', 'Last 30 days'], ['all', 'All (old too)']];
 function ckRecDates() {
@@ -16601,7 +16602,7 @@ function ckRecDates() {
   return [t, t];
 }
 function ckLoadRecords(force) {
-  if (!ckSeesRecords()) return;
+  if (!ME) return;
   var d = ckRecDates(), loc = ckScopeLoc();
   if (!force && ckCached(d[0], d[1], loc)) return;
   if (!Api.token) { CK.recErr = CK_NET; ckPaintRecords(); return; }
@@ -16612,7 +16613,7 @@ function ckLoadRecords(force) {
    and redraws only when a checklist was sent meanwhile. */
 var CK_RBUSY = false;
 function ckRecordsRefresh() {
-  if (CK_RBUSY || !ckSeesRecords() || !document.getElementById('ck_records')) return;
+  if (CK_RBUSY || !ME || !document.getElementById('ck_records')) return;
   var d = ckRecDates(), loc = ckScopeLoc();
   if (ckCacheAge(d[0], d[1], loc) < 30000) return;
   var before = JSON.stringify(ckCached(d[0], d[1], loc));
@@ -16636,7 +16637,7 @@ function ckTickedCell(r) {
    Tap a row to see every item. */
 function ckRecordsHtml() {
   var d = ckRecDates(), rows = ckCached(d[0], d[1], ckScopeLoc());
-  var html = '<div class="sec-t">Checklist records' + (rows ? ' · ' + rows.length : '') + '</div><div class="chips">' +
+  var html = '<div class="sec-t">' + (ckSeesRecords() ? 'Checklist records' : 'My checklist records') + (rows ? ' · ' + rows.length : '') + '</div><div class="chips">' +
     CK_RANGES.map(function (c) {
       return '<button class="chip' + (CK.recRange === c[0] ? ' on' : '') + '" data-a="ckRange" data-x="' + c[0] + '">' + c[1] + '</button>';
     }).join('') + '</div>';

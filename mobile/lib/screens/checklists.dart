@@ -154,8 +154,9 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     _loadRecords();
   }
 
-  /* Checklist records are for Admin EXE (the Super Admin) alone. */
-  bool get _mayList => S.me?['role'] == 'superadmin';
+  /* Everyone sees records: Admin EXE every restaurant's, everyone else
+     the ones they sent themselves (the server decides which). */
+  bool get _mayList => S.me != null;
 
   (String, String) get _dates {
     final t = istYmd();

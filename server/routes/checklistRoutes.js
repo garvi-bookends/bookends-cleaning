@@ -13,7 +13,7 @@
    Endpoints:
      GET  /api/checklists/status   windows right now + my submissions (everyone)
      POST /api/checklists          submit { type, loc?, answers } (not auditors)
-     GET  /api/checklists          records for a date range (Super Admin only)
+     GET  /api/checklists          records for a date range (Super Admin: all; others: their own)
      GET  /api/checklists/:id      one record (Super Admin, or the sender)
    --------------------------------------------------------------------------- */
 
@@ -31,8 +31,8 @@ router.use(requireAuth);
 
 /* Mirrors ROLES[].readonly in index.html. Auditors look; they do not submit. */
 var READONLY_ROLES = ['auditor'];
-/* Checklist records are read by Admin EXE (the Super Admin) alone.
-   Everyone else sees only what they sent themselves. */
+/* Every restaurant's checklist records are read by Admin EXE (the Super
+   Admin) alone. Everyone else sees only what they sent themselves. */
 function seesRecords(role) { return role === 'superadmin'; }
 
 var LOC_FORMAT = /^[A-Z0-9-]{2,40}$/;
@@ -153,23 +153,21 @@ router.post('/', asyncHandler(function (req, res) {
    GET /?from=YYYY-MM-DD&to=YYYY-MM-DD&loc=
    --------------------------------------------------------------------------- */
 router.get('/', asyncHandler(function (req, res) {
-  if (!seesRecords(req.auth.role)) {
-    return fail(res, 403, 'You do not have permission to do that', 'FORBIDDEN');
-  }
   var today = windows.istParts(Date.now()).ymd;
   var from = YMD.test(req.query.from || '') ? req.query.from : windows.addDaysYmd(today, -6);
   var to = YMD.test(req.query.to || '') ? req.query.to : today;
   if (from > to) { var t = from; from = to; to = t; }
 
-  var loc = null;
-  if (seesAllLocations(req.auth.role)) {
+  /* Admin EXE gets every record (optionally one kitchen's). Everyone else
+     gets only the checklists they sent themselves, at any kitchen. */
+  var loc = null, userId = null;
+  if (seesRecords(req.auth.role)) {
     if (req.query.loc && LOC_FORMAT.test(req.query.loc)) loc = req.query.loc;
   } else {
-    loc = req.auth.loc;
-    if (!loc) return res.json({ from: from, to: to, checklists: [] });
+    userId = req.auth.id;
   }
 
-  return checklists.list({ from: from, to: to, loc: loc }).then(function (rows) {
+  return checklists.list({ from: from, to: to, loc: loc, userId: userId }).then(function (rows) {
     res.set('Cache-Control', 'no-store');
     res.json({ from: from, to: to, checklists: rows });
   });
