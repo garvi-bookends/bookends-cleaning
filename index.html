@@ -351,7 +351,13 @@ a.btn{text-decoration:none}
   .tabs{position:fixed;left:0;right:auto;top:0;bottom:0;z-index:70;width:232px;border-top:0;border-right:1px solid var(--line);
     padding:0;background:linear-gradient(180deg,#2a3a9e 0%,#1e2a78 50%,#141c58 100%);box-shadow:4px 0 24px rgba(20,28,88,.18);flex-direction:column}
   .tabs-in{flex-direction:column;max-width:none;width:232px;padding:18px 12px;gap:4px}
-  .tabs-in::before{content:'BOOKENDS';display:block;color:#fff;font-size:13px;font-weight:800;letter-spacing:2px;padding:8px 14px 18px;opacity:.9}
+  /* Brand block at the top of the sidebar: a white tile with the B, the
+     name, and what this app is. */
+  .tabs-in .sbrand{display:flex;align-items:center;gap:12px;padding:6px 10px 20px}
+  .sbrand-b{flex:none;width:40px;height:40px;border-radius:10px;background:#fff;color:#1e2a78;display:grid;place-items:center;font-size:20px;font-weight:900}
+  .sbrand-t{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+  .sbrand-t b{color:#fff;font-size:15px;font-weight:800;letter-spacing:.6px}
+  .sbrand-t span{color:rgba(255,255,255,.7);font-size:12.5px;font-weight:600}
   .tab{flex:none;flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;padding:12px 14px;min-height:48px;border-radius:12px;
     font-size:14.5px;color:rgba(255,255,255,.72)}
   .tab svg{width:22px;height:22px}
@@ -406,6 +412,7 @@ a.btn{text-decoration:none}
   .thbtn{display:none}
 }
 .thtab{display:none}
+.sbrand{display:none}
 @media (min-width:1280px){ .wrap{padding:24px 40px} }
 .netbar{position:fixed;left:0;right:0;top:0;z-index:300;background:#8a5f00;color:#fff;font-size:12.5px;font-weight:700;
   text-align:center;padding:calc(env(safe-area-inset-top) + 6px) 12px 6px}
@@ -12863,8 +12870,9 @@ function tabbar() {
      The phone's bar has no room for it; there it is the header's moon button. */
   nav += '<button class="tab thtab" data-a="theme" role="switch" aria-checked="' + isDark() + '">' + ic('moon') +
     '<span>Dark Mode</span><i class="tsw' + (isDark() ? ' on' : '') + '"></i></button>';
+  var brand = '<div class="sbrand"><span class="sbrand-b">B</span><span class="sbrand-t"><b>BOOKENDS</b><span>Cleaning</span></span></div>';
   $('#tabbar').innerHTML = '<div class="tabs"><div class="tabs-in' +
-    (perm().superadmin && !mgmtNavOpen() ? ' mg-shut' : '') + '">' + nav + '</div></div>';
+    (perm().superadmin && !mgmtNavOpen() ? ' mg-shut' : '') + '">' + brand + nav + '</div></div>';
 }
 
 /* ---------- login ---------- */
