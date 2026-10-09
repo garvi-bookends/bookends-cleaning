@@ -9,9 +9,9 @@
 
 var Pool = require('pg').Pool;
 var config = require('../config/env');
+var connectionParams = require('./connectionParams');
 
-var pool = new Pool({
-  connectionString: config.db.connectionString,
+var pool = new Pool(Object.assign(connectionParams(config.db.connectionString), {
   ssl: config.db.ssl,
   max: config.db.max,
   /* On Vercel an instance can be frozen between requests. A short idle
@@ -19,7 +19,7 @@ var pool = new Pool({
      instead of sitting open on a sleeping instance. */
   idleTimeoutMillis: config.onVercel ? 5000 : 30000,
   connectionTimeoutMillis: 10000
-});
+}));
 
 /* An idle client dying (a pooler recycling the connection, for example) must
    not take the process down with it. */
