@@ -52,7 +52,13 @@ button,input,select,textarea{font:inherit;color:inherit}
 .locbar select{width:100%;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);color:#fff;padding:11px 12px;border-radius:12px;font-size:15px;font-weight:600;appearance:none;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>");
   background-repeat:no-repeat;background-position:right 12px center}
-.locbar select option{color:#0f1630}
+/* The open list is drawn by the browser on white: the select's white text
+   would make the city headings invisible, so every row gets dark text. */
+.locbar select optgroup{color:#0f1630;background:#fff;font-weight:700;font-style:normal}
+.locbar select option{color:#0f1630;background:#fff;font-weight:500;padding:4px 0}
+/* On a wide screen the picker does not need the whole width, and the list
+   the browser opens is as wide as the box. */
+@media (min-width:900px){ .locbar select{max-width:360px} }
 
 /* ---------- layout ---------- */
 .wrap{padding:14px}
@@ -509,7 +515,7 @@ html[data-theme="dark"] .photo{border-color:#36415f}
 html[data-theme="dark"] .ck-box{border-color:#4a5578}
 html[data-theme="dark"] .chev{color:#56618a}
 html[data-theme="dark"] .step.todo .n{background:#36415f}
-html[data-theme="dark"] .locbar select option{color:#e7ebf7;background:#182036}
+html[data-theme="dark"] .locbar select option,html[data-theme="dark"] .locbar select optgroup{color:#e7ebf7;background:#182036}
 html[data-theme="dark"] select.inp{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='%239aa4c2'><path d='M7 10l5 5 5-5z'/></svg>")}
 html[data-theme="dark"] .ovl,html[data-theme="dark"] .dlg-ovl{background:rgba(0,0,0,.6)}
 /* status pills: dark tint, light text */
