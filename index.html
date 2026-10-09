@@ -15435,6 +15435,16 @@ function renderTypeProducts(t, kind) {
 var CK_MDATE = null;          /* the day being looked at; null = today (IST) */
 var CK_MERR = null;           /* { date, msg } when that day could not be loaded */
 var CK_MBUSY = false;         /* a refresh of that day is in flight */
+/* How far back the "Checklist records" list goes: '7d', '30d' or 'all'.
+   All by default — the page is where the whole record is read, not only
+   the last week. */
+var CK_MRANGE = 'all';
+var CK_MRANGES = [['7d', 'Last 7 days'], ['30d', 'Last 30 days'], ['all', 'All records']];
+/* First day of that list. 'all' asks from a date before the app existed. */
+function ckMgRecentFrom() {
+  var t = ckTodayIST();
+  return CK_MRANGE === '7d' ? CHKW.addDaysYmd(t, -6) : CK_MRANGE === '30d' ? CHKW.addDaysYmd(t, -29) : '2020-01-01';
+}
 /* Fetches the day being looked at again, and redraws only if a checklist
    was sent (or changed) meanwhile. Called on opening the page and every
    few seconds while it stays open, so a checklist a manager submits on
@@ -15442,8 +15452,8 @@ var CK_MBUSY = false;         /* a refresh of that day is in flight */
 function ckMgRefresh(force) {
   if (CK_MBUSY || !(S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist')) return;
   var date = CK_MDATE || ckTodayIST();
-  /* The "Sent in the last 7 days" list, fetched alongside the picked day. */
-  var t = ckTodayIST(), wkFrom = CHKW.addDaysYmd(t, -6);
+  /* The "Checklist records" list, fetched alongside the picked day. */
+  var t = ckTodayIST(), wkFrom = ckMgRecentFrom();
   if (force || ckCacheAge(wkFrom, t, null) >= 30000) {
     var wkBefore = JSON.stringify(ckCached(wkFrom, t, null));
     ckFetch(wkFrom, t, null, true).then(function (rows) {
@@ -15523,9 +15533,10 @@ function renderTypeChecklists(t) {
     if (MGMT_FILTER === 'done' && !x.done) return false;
     return mgMatches([x.L.name, x.L.code, x.L.city, x.mgr, x.w.label, x.sub ? x.sub.userName : '']);
   });
-  /* Every checklist sent in the last 7 days, whatever day is picked, so
-     the work already done is on this page even before today's first one. */
-  var wkFrom = CHKW.addDaysYmd(today, -6);
+  /* Every checklist sent in the chosen range (all of them by default),
+     whatever day is picked, so the work already done is on this page even
+     before today's first one. */
+  var wkFrom = ckMgRecentFrom();
   var recent = ckCached(wkFrom, today, null);
   var order = { LUNCH: 0, DINNER: 1, CLOSING: 2 };
   var sent = (recent || []).filter(function (r) {
@@ -15534,7 +15545,12 @@ function renderTypeChecklists(t) {
     return a.shiftDate !== b.shiftDate ? (a.shiftDate < b.shiftDate ? 1 : -1)
       : (order[a.type] - order[b.type]) || lname(a.loc).localeCompare(lname(b.loc));
   });
-  html += '<div class="sec-t">Sent in the last 7 days · ' + fmtD(wkFrom) + ' – ' + fmtD(today) + ' · ' + (recent ? sent.length : '…') + '</div>';
+  var rangeLbl = CK_MRANGES.filter(function (c) { return c[0] === CK_MRANGE; })[0][1];
+  html += '<div class="sec-t">Checklist records · ' + h(rangeLbl) +
+    (CK_MRANGE === 'all' ? '' : ' · ' + fmtD(wkFrom) + ' – ' + fmtD(today)) + ' · ' + (recent ? sent.length : '…') + '</div>';
+  html += '<div class="chips">' + CK_MRANGES.map(function (c) {
+    return '<button class="chip' + (CK_MRANGE === c[0] ? ' on' : '') + '" data-a="ckMgRange" data-x="' + c[0] + '">' + c[1] + '</button>';
+  }).join('') + '</div>';
   html += recent
     ? mgTable(['Date', 'Restaurant', 'Checklist', 'Sent by', 'Ticked'], sent.map(function (r) {
         return '<tr data-a="ckView" data-x="' + h(r.id) + '" style="cursor:pointer">' +
@@ -15544,7 +15560,7 @@ function renderTypeChecklists(t) {
           '<td class="sm">' + h(r.userName) + '<div class="xs muted">' + h(ckTime(r.submittedAt)) + ' IST</div></td>' +
           '<td class="sm nowrap">' + ckTickedCell(r) + '</td>' +
           '</tr>';
-      }), 'No checklist has been sent in the last 7 days')
+      }), CK_MRANGE === 'all' ? 'No checklist has been sent yet' : 'No checklist was sent in this range')
     : '<div class="card sm muted">Loading checklist data…</div>';
   html += '<div class="sec-t">Restaurant-wise · ' + fmtD(date) + ' · ' + shown.length +
     (shown.length !== list.length ? ' of ' + list.length : '') + '</div>';
@@ -17209,6 +17225,7 @@ document.addEventListener('click', function (ev) {
     case 'ckView': ckViewRec(x); break;
     case 'ckTick': { var tp = x.split(':'); ckTick(tp[0], +tp[1], el); break; }
     case 'ckRange': CK.recRange = x; CK.recErr = ''; ckPaintRecords(); ckLoadRecords(false); break;
+    case 'ckMgRange': if (CK_MRANGES.some(function (c) { return c[0] === x; })) { CK_MRANGE = x; renderTypeServices(); } break;
     case 'ckMgDay': if (/^\d{4}-\d{2}-\d{2}$/.test(x)) { CK_MDATE = x; renderTypeServices(); } break;
     case 'ckReload': CK.recErr = ''; ckPaintRecords(); ckLoadRecords(true); break;
   }
