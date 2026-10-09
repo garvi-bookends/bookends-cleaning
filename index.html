@@ -16325,7 +16325,7 @@ function ckCardsHtml() {
         '<div class="xs muted">Opens in ' + ckIn(s.nextOpensAt - ckNow()) + '</div>';
       foot = '<button class="btn" disabled aria-disabled="true">Open Checklist</button>';
     }
-    return '<div class="card"><div class="row"><span class="ck-ic" style="background:' + st.bg + '">' + st.icon + '</span>' +
+    return '<div class="card"><div class="row">' +
       '<div class="grow"><div class="b" style="font-size:16.5px;line-height:1.2">' + h(w.label) + '</div>' +
       '<div class="ck-time">' + ckRangeText(w) + '</div></div></div>' +
       '<div class="sm">Status: ' + status + '</div>' + body + '<div class="ck-foot">' + foot + '</div></div>';
