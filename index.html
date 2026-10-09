@@ -15589,7 +15589,9 @@ function jobsSection(t) {
      All alone — counting it active or done would be a lie about both. That
      is why the three counts need not add up. */
   var services = allServicesOfType(t.id).filter(function (j) { return !j.stopped; });
-  var oneOffs = oneTimeJobsOfType(t.id);
+  /* An overdue job is not listed here at all — not under All, not under
+     Active, not in the counts. */
+  var oneOffs = oneTimeJobsOfType(t.id).filter(function (x) { return !jobOverdue(x); });
   var byState = { deleted: [], off: [], overdue: [], active: [], done: [] };
   services.forEach(function (j) { byState[serviceState(j)].push({ svc: j }); });
   oneOffs.forEach(function (x) { byState[oneTimeState(x)].push({ job: x }); });
