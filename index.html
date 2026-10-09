@@ -13382,7 +13382,9 @@ function cityCompare(A, B) {
 
 /* ---------- alerts sheet ---------- */
 function alertsSheet() {
-  var al = buildAlerts();
+  /* Only what is new. Once read, a notification leaves the list, so the
+     list and the bell always count the same thing. */
+  var al = unreadAlerts();
   var body = al.length ? al.map(function (a) {
     var s = SEV[a.sev];
     return '<button class="lrow" data-a="goAlert" data-x="' + a.go[0] + ':' + a.go[1] + '" data-y="' + a.id + '">' +
@@ -13390,13 +13392,11 @@ function alertsSheet() {
       '<span class="grow"><span class="t trunc">' + h(a.title) + '</span>' +
       '<div class="xs" style="margin-top:2px"><b>' + h(a.type) + '</b> · ' + h(lname(a.loc)) + '</div>' +
       '<div class="xs muted trunc">' + h(a.body) + '</div></span>' +
-      (DB.read[a.id] ? '' : '<span class="dot" style="background:var(--blue)"></span>') + '</button>';
-  }).join('') : '<div class="empty"><div class="ic">✅</div>No open alerts</div>';
-  /* The same number the bell shows: what has not been read yet. */
-  var unread = al.filter(function (a) { return !DB.read[a.id]; }).length;
-  openSheet('Notifications (' + unread + (unread !== al.length ? ' new of ' + al.length : '') + ')',
+      '<span class="dot" style="background:var(--blue)"></span></button>';
+  }).join('') : '<div class="empty"><div class="ic">✅</div>No new notifications</div>';
+  openSheet('Notifications (' + al.length + ')',
     '<div class="card pad0">' + body + '</div>' +
-    (unread ? '<button class="btn sec" data-a="readAll">Mark all as read</button>' : ''));
+    (al.length ? '<button class="btn sec" data-a="readAll">Mark all as read</button>' : ''));
 }
 
 /* ---------- profile sheet ---------- */
