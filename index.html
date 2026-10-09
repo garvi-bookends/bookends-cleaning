@@ -13342,7 +13342,6 @@ function meSheet() {
     '<div class="sec-t">Your permissions</div><div class="card"><ul style="margin:0;padding-left:20px" class="sm">' +
     caps.map(function (c) { return '<li style="margin:5px 0">' + h(c) + '</li>'; }).join('') + '</ul></div>' +
     '<button class="btn sec" data-a="changePw" style="margin-bottom:10px">🔒 Change my password</button>' +
-    (p.manage ? '<button class="btn sec" data-a="cloudSetup" style="margin-bottom:10px">☁️ Cloud sync — ' + h(Cloud.label()) + '</button>' : '') +
     /* No way in to people or jobs here: User Management, Job Management and
        Task Review are the Super Admin's alone, reached from the Management
        menu, and nobody else is offered a side door to them. */
@@ -13351,8 +13350,6 @@ function meSheet() {
        than among the management screens: it is not a way of managing the
        work, it is how you hand the app to somebody else. */
     (p.superadmin ? '<button class="btn sec" data-a="wipeAsk" style="margin-bottom:10px;color:var(--red)">⚠️ Wipe All Data</button>' : '') +
-    '<button class="btn sec" data-a="help" style="margin-bottom:10px">❓ How to use the app</button>' +
-    '<button class="btn sec" data-a="about" style="margin-bottom:10px">ℹ️ About &amp; version</button>' +
     '<div class="sec-t">Account</div>' +
     '<button class="btn no" data-a="logout">Log out</button>' +
     '<div class="sm muted center" style="margin-top:10px">You stay signed in on this phone until you log out.</div>');
