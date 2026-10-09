@@ -13076,6 +13076,7 @@ function renderSimpleHome() {
     '<button class="iconbtn" data-a="me">' + h(initials(ME.name)) + '</button></div></div>';
 
   html += '<div class="wrap home">';
+  html += ckNotifyAskHtml();
   /* Each card is the door to one section, so it is only drawn when this
      person's job types reach that section — a card that bounces back to
      Home is worse than no card. */
@@ -13198,6 +13199,7 @@ function renderHome() {
   var html = header('BOOKENDS CLEANING', ROLES[ME.role].label + ' · ' + (scope ? lname(scope) : 'All locations'));
   html += '<div class="wrap">';
   html += pendingSignupsCard();
+  html += ckNotifyAskHtml();
 
   /* hero */
   html += '<div class="card" style="background:linear-gradient(135deg,var(--brand),var(--brand2));border:0;color:#fff;text-align:center;padding:20px 14px">' +
@@ -16432,6 +16434,13 @@ function ckNotifyCardHtml() {
   return '<div class="card"><div class="b">🔔 Checklist reminders</div>' +
     '<div class="sm muted" style="margin:4px 0 10px">Get a notification 5 minutes before each checklist opens and 5 minutes before it closes.</div>' +
     '<button class="btn sec" data-a="ckNotifyOn">Turn on reminders</button></div>';
+}
+/* The same question on Home, so people who never open the Checklist page
+   are still asked. Only while it is unanswered: once allowed or blocked,
+   Home says nothing and the Checklist page keeps the full status. */
+function ckNotifyAskHtml() {
+  if (!ckRemindable() || !ckNotifySupported() || Notification.permission !== 'default') return '';
+  return ckNotifyCardHtml();
 }
 function ckNotifyOn() {
   if (!ckNotifySupported()) return;
