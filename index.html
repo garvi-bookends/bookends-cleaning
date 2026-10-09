@@ -13412,6 +13412,20 @@ function cityCompare(A, B) {
 }
 
 /* ---------- alerts sheet ---------- */
+/* Keeps the number on the bell true. It used to be worked out only when the
+   page was drawn, so a reminder whose 5 minutes had passed, or work that
+   synced in meanwhile, left a number on the bell over an empty list. */
+function paintBell() {
+  if (!ME || !DB) return;
+  var n = unreadAlerts().length, txt = n > 99 ? '99+' : String(n);
+  document.querySelectorAll('[data-a="alerts"]').forEach(function (b) {
+    var badge = b.querySelector('.badge');
+    if (!n) { if (badge) badge.remove(); return; }
+    if (!badge) { badge = document.createElement('span'); badge.className = 'badge'; b.appendChild(badge); }
+    if (badge.textContent !== txt) badge.textContent = txt;
+  });
+}
+setInterval(function () { try { if (!document.hidden) paintBell(); } catch (e) { } }, 5000);
 function alertsSheet() {
   /* Only what is new. Once read, a notification leaves the list, so the
      list and the bell always count the same thing. */
@@ -13428,6 +13442,8 @@ function alertsSheet() {
   openSheet('Notifications (' + al.length + ')',
     '<div class="card pad0">' + body + '</div>' +
     (al.length ? '<button class="btn sec" data-a="readAll">Mark all as read</button>' : ''));
+  /* The bell says exactly what the list says. */
+  paintBell();
 }
 
 /* ---------- profile sheet ---------- */
