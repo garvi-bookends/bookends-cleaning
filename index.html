@@ -13157,15 +13157,16 @@ function ckHomeShifts() {
   var now = ckNow();
   return CHKW.WINDOWS.map(function (w) { return { w: w, date: CHKW.windowState(w, now).shiftDate }; });
 }
-function ckHomeRange() {
-  var d = ckHomeShifts().map(function (x) { return x.date; }).sort();
-  return [d[0], d[d.length - 1]];
-}
 function ckHomeHtml() {
   if (!tabAllowed('chk')) return '';
   var p = perm(), scope = (p.all && S.loc === 'ALL') ? null : S.loc;
   var locs = scope ? [scope] : visibleLocations().map(function (l) { return l.id; });
-  var r = ckHomeRange(), rows = ckCached(r[0], r[1], null), now = ckNow();
+  /* Counted from the checklist status everyone gets (this shift's sends for
+     the restaurants they cover), not from the records list, which only
+     Admin EXE may read. */
+  var rows = CK.status ? Object.keys(CK.status).reduce(function (a, k) {
+    return a.concat(CK.status[k].submissions || []);
+  }, []) : null, now = ckNow();
   return '<div class="sec-t">Checklists · sent / restaurants</div><div class="grid3">' + ckHomeShifts().map(function (x) {
     var sent = rows ? rows.filter(function (c) {
       return c.type === x.w.type && c.shiftDate === x.date && locs.indexOf(c.loc) > -1;
@@ -13180,18 +13181,10 @@ function ckHomeHtml() {
 }
 /* Fetches those shifts again (at most every 30 seconds) while Home is open,
    and redraws the tiles only when a checklist was sent meanwhile. */
-var CK_HBUSY = false;
 function ckHomeRefresh(force) {
-  if (CK_HBUSY || S.tab !== 'home' || !ME || ME.role === 'staff' || !tabAllowed('chk')) return;
-  var r = ckHomeRange();
-  if (!force && ckCacheAge(r[0], r[1], null) < 30000) return;
-  var before = JSON.stringify(ckCached(r[0], r[1], null));
-  CK_HBUSY = true;
-  ckFetch(r[0], r[1], null, true).then(function (rows) {
-    CK_HBUSY = false;
-    var el = document.getElementById('home_ck');
-    if (el && S.tab === 'home' && JSON.stringify(rows) !== before) el.innerHTML = ckHomeHtml();
-  }, function () { CK_HBUSY = false; });
+  if (S.tab !== 'home' || !ME || ME.role === 'staff' || !tabAllowed('chk')) return;
+  /* At most once a minute; ckPoll redraws the tiles when the answer changes. */
+  ckLoadStatus(!!force);
 }
 function renderHome() {
   if (ME.role === 'staff') { renderSimpleHome(); return; }
@@ -15428,181 +15421,18 @@ function renderTypeProducts(t, kind) {
   mgWireSearch(renderTypeServices);
 }
 /* ---------- the Checklist job type ----------
-   Every restaurant's Lunch, Dinner and Closing checklists for one day, each
-   Pending or Done. A checklist is Done once someone at that restaurant has
-   submitted it — photo taken inside its time window — so this reads the
-   checklist records on the server rather than anything set up here. */
-var CK_MDATE = null;          /* the day being looked at; null = today (IST) */
-var CK_MERR = null;           /* { date, msg } when that day could not be loaded */
-var CK_MBUSY = false;         /* a refresh of that day is in flight */
-/* How far back the "Checklist records" list goes: '7d', '30d' or 'all'.
-   All by default — the page is where the whole record is read, not only
-   the last week. */
-var CK_MRANGE = 'all';
-var CK_MRANGES = [['7d', 'Last 7 days'], ['30d', 'Last 30 days'], ['all', 'All records']];
-/* First day of that list. 'all' asks from a date before the app existed. */
-function ckMgRecentFrom() {
-  var t = ckTodayIST();
-  return CK_MRANGE === '7d' ? CHKW.addDaysYmd(t, -6) : CK_MRANGE === '30d' ? CHKW.addDaysYmd(t, -29) : '2020-01-01';
-}
-/* Fetches the day being looked at again, and redraws only if a checklist
-   was sent (or changed) meanwhile. Called on opening the page and every
-   few seconds while it stays open, so a checklist a manager submits on
-   their phone shows up here without reloading the app. */
-function ckMgRefresh(force) {
-  if (CK_MBUSY || !(S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist')) return;
-  var date = CK_MDATE || ckTodayIST();
-  /* The "Checklist records" list, fetched alongside the picked day. */
-  var t = ckTodayIST(), wkFrom = ckMgRecentFrom();
-  if (force || ckCacheAge(wkFrom, t, null) >= 30000) {
-    var wkBefore = JSON.stringify(ckCached(wkFrom, t, null));
-    ckFetch(wkFrom, t, null, true).then(function (rows) {
-      if (JSON.stringify(rows) !== wkBefore && S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist') renderTypeServices();
-    }, function () { /* the day table above still shows its own error */ });
-  }
-  if (!force && ckCacheAge(date, date, null) < 30000) return;
-  var before = JSON.stringify(ckCached(date, date, null));
-  CK_MBUSY = true;
-  ckFetch(date, date, null, true).then(function (rows) {
-    CK_MBUSY = false;
-    if (CK_MERR && CK_MERR.date === date) CK_MERR = null;
-    if (JSON.stringify(rows) !== before && S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist') renderTypeServices();
-  }, function (err) {
-    CK_MBUSY = false;
-    if (ckCached(date, date, null)) return;     /* keep showing what we have */
-    CK_MERR = { date: date, msg: err && err.offline ? CK_NET : 'Could not load the checklists for this day.' };
-    if (S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist') renderTypeServices();
-  });
-}
-/* The manager of a restaurant: its Location Manager account(s) from the
-   roster, or the head named in the location list when none is set up. */
-function ckManagerOf(L) {
-  var names = (DB.users || []).filter(function (u) { return u.role === 'manager' && u.loc === L.id && !u.disabled; })
-    .map(function (u) { return u.name; });
-  return names.length ? names.join(', ') : (L.head || '');
-}
+   The same checklist records list as the Checklist page — one list, one
+   look, in both places. Only Admin EXE (the Super Admin) sees it. */
 function renderTypeChecklists(t) {
-  var today = ckTodayIST();
-  var date = CK_MDATE || today;
-  var rows = ckCached(date, date, null);
-  var now = ckNow();
-
-  var list = [];
-  LOCATIONS.forEach(function (L) {
-    CHKW.WINDOWS.forEach(function (w) {
-      var sub = (rows || []).filter(function (r) { return r.loc === L.id && r.type === w.type && r.shiftDate === date; })
-        .sort(function (a, b) { return a.submittedAt - b.submittedAt; })[0] || null;
-      var b = CHKW.shiftBounds(w, date);
-      var when = sub ? '' : now < b.startsAt ? 'Opens ' + CHKW.fmtMinutes(w.start) : now < b.endsAt ? 'Open now' : 'Time is over';
-      list.push({ L: L, mgr: ckManagerOf(L), w: w, sub: sub, done: !!sub, when: when });
-    });
-  });
-  var done = list.filter(function (x) { return x.done; }).length, pend = list.length - done;
-
   var html = mgHead(t.name.toUpperCase(), 'Job Management · Lunch · Dinner · Closing', ['mgmtJobsBack', 'Job Management']);
-  html += mgStatsRow([
-    [LOCATIONS.length, 'Restaurants', 'var(--ink)'],
-    [list.length, 'Checklists', 'var(--ink)'],
-    [rows ? done : '…', 'Done', 'var(--grn)'],
-    [rows ? pend : '…', 'Pending', pend ? 'var(--org)' : 'var(--mut)']
-  ]);
   if (!t.active) {
     html += '<div class="card sm" style="background:#fde8e9;border-color:#f7c9cc;margin-top:12px"><b>This job type is switched off.</b> ' +
       'Nobody can be given checklist work while it is.</div>';
   }
-  /* Today / Yesterday in one tap: a page that opens on today showed nothing
-     before the first checklist of the day, and yesterday's sat a date-picker
-     away. */
-  var yesterday = CHKW.addDaysYmd(today, -1);
-  html += '<div class="chips" style="margin-top:12px">' + [[today, 'Today'], [yesterday, 'Yesterday']].map(function (c) {
-    return '<button class="chip' + (date === c[0] ? ' on' : '') + '" data-a="ckMgDay" data-x="' + c[0] + '">' + c[1] + '</button>';
-  }).join('') + '</div>';
-  html += '<label class="f" style="margin-top:4px"><span>Date</span>' +
-    '<input class="inp" id="ckm_date" type="date" value="' + h(date) + '" max="' + h(today) + '"></label>';
-  html += mgSearchBox(MGMT_Q, 'Restaurant, manager or checklist');
-  html += mgChips([['all', 'All ' + list.length], ['pending', 'Pending ' + (rows ? pend : '…')], ['done', 'Done ' + (rows ? done : '…')]], MGMT_FILTER);
-
-  var failed = CK_MERR && CK_MERR.date === date ? CK_MERR.msg : '';
-  if (!rows && failed) {
-    html += '<div class="card sm" style="margin-top:12px"><b>' + h(failed) + '</b> ' +
-      '<button class="btn sec sm" data-a="ckMgRetry" style="margin-left:8px">Try again</button></div>';
-  }
-
-  var shown = list.filter(function (x) {
-    if (MGMT_FILTER === 'pending' && x.done) return false;
-    if (MGMT_FILTER === 'done' && !x.done) return false;
-    return mgMatches([x.L.name, x.L.code, x.L.city, x.mgr, x.w.label, x.sub ? x.sub.userName : '']);
-  });
-  /* Every checklist sent in the chosen range (all of them by default),
-     whatever day is picked, so the work already done is on this page even
-     before today's first one. */
-  var wkFrom = ckMgRecentFrom();
-  var recent = ckCached(wkFrom, today, null);
-  var order = { LUNCH: 0, DINNER: 1, CLOSING: 2 };
-  var sent = (recent || []).filter(function (r) {
-    return mgMatches([lname(r.loc), r.userName, CK_STYLE[r.type] ? CK_STYLE[r.type].short : r.type]);
-  }).sort(function (a, b) {
-    return a.shiftDate !== b.shiftDate ? (a.shiftDate < b.shiftDate ? 1 : -1)
-      : (order[a.type] - order[b.type]) || lname(a.loc).localeCompare(lname(b.loc));
-  });
-  var rangeLbl = CK_MRANGES.filter(function (c) { return c[0] === CK_MRANGE; })[0][1];
-  html += '<div class="sec-t">Checklist records · ' + h(rangeLbl) +
-    (CK_MRANGE === 'all' ? '' : ' · ' + fmtD(wkFrom) + ' – ' + fmtD(today)) + ' · ' + (recent ? sent.length : '…') + '</div>';
-  html += '<div class="chips">' + CK_MRANGES.map(function (c) {
-    return '<button class="chip' + (CK_MRANGE === c[0] ? ' on' : '') + '" data-a="ckMgRange" data-x="' + c[0] + '">' + c[1] + '</button>';
-  }).join('') + '</div>';
-  html += recent
-    ? mgTable(['Date', 'Restaurant', 'Checklist', 'Sent by', 'Ticked'], sent.map(function (r) {
-        return '<tr data-a="ckView" data-x="' + h(r.id) + '" style="cursor:pointer">' +
-          '<td class="sm nowrap"><b>' + fmtD(r.shiftDate) + '</b></td>' +
-          '<td class="sm">' + h(lname(r.loc)) + '</td>' +
-          '<td class="sm">' + (CK_STYLE[r.type] ? CK_STYLE[r.type].icon + ' ' + h(CK_STYLE[r.type].short) : h(r.type)) + '</td>' +
-          '<td class="sm">' + h(r.userName) + '<div class="xs muted">' + h(ckTime(r.submittedAt)) + ' IST</div></td>' +
-          '<td class="sm nowrap">' + ckTickedCell(r) + '</td>' +
-          '</tr>';
-      }), CK_MRANGE === 'all' ? 'No checklist has been sent yet' : 'No checklist was sent in this range')
-    : '<div class="card sm muted">Loading checklist data…</div>';
-  html += '<div class="sec-t">Restaurant-wise · ' + fmtD(date) + ' · ' + shown.length +
-    (shown.length !== list.length ? ' of ' + list.length : '') + '</div>';
-  /* A restaurant and its manager are written once, spanning that
-     restaurant's rows, rather than repeated beside each checklist. */
-  var span = {};
-  shown.forEach(function (x) { span[x.L.id] = (span[x.L.id] || 0) + 1; });
-  var seen = {};
-  html += mgTable(['Restaurant', 'Manager', 'Checklist', 'Time', 'Status', 'Sent by', 'Ticked'], shown.map(function (x) {
-    var first = !seen[x.L.id]; seen[x.L.id] = 1;
-    var n = span[x.L.id];
-    return '<tr' + (first ? ' class="ckm-first"' : '') + '>' +
-      (first
-        ? '<td rowspan="' + n + '" class="ckm-grp"><b>' + h(x.L.name) + '</b><div class="xs muted">' + h(x.L.city) + '</div></td>' +
-          '<td rowspan="' + n + '" class="sm ckm-grp">' + (x.mgr ? h(x.mgr) : '<span class="muted">—</span>') + '</td>'
-        : '') +
-      '<td class="sm">' + CK_STYLE[x.w.type].icon + ' ' + h(CK_STYLE[x.w.type].short) + '</td>' +
-      '<td class="sm nowrap">' + h(ckRangeText(x.w)) + '</td>' +
-      '<td>' + (!rows ? '<span class="muted">…</span>' : x.done ? pill('DONE', 'p-grn') : pill('PENDING', 'p-org')) +
-        (rows && x.when ? '<div class="xs muted">' + h(x.when) + '</div>' : '') + '</td>' +
-      '<td class="sm">' + (x.sub ? h(x.sub.userName) + '<div class="xs muted">' + h(ckTime(x.sub.submittedAt)) + ' IST</div>' : '—') + '</td>' +
-      '<td class="sm nowrap">' + (x.sub
-        ? ckTickedCell(x.sub) + '<div><button class="linkish xs b" data-a="ckView" data-x="' + h(x.sub.id) + '">View checklist</button></div>'
-        : '<span class="muted">—</span>') + '</td>' +
-      '</tr>';
-  }), MGMT_FILTER === 'done' ? 'No checklist is done yet for this day' : MGMT_FILTER === 'pending' ? 'Nothing is pending — every checklist is done' : 'Nothing matches');
-
-
-  html += '<div class="card sm muted" style="margin-top:12px"><b>Done</b> means the checklist was sent: someone at that restaurant submitted it ' +
-    'inside its time window. <b>Sent by</b> shows who, and when; <b>Ticked</b> shows how many items they ticked — tap <b>View checklist</b> to see every item. ' +
-    '<b>Pending</b> means it has not been sent yet. This page updates by itself as checklists come in.</div>';
+  html += ckSeesRecords() ? '<div id="ck_records">' + ckRecordsHtml() + '</div>'
+    : '<div class="card sm muted" style="margin-top:12px">Only Admin EXE can see checklist records.</div>';
   $('#app').innerHTML = html + '<div style="height:20px"></div></div>';
-  mgWireSearch(renderTypeServices);
-
-  var d = document.getElementById('ckm_date');
-  if (d) d.addEventListener('change', function () {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(d.value)) return;
-    CK_MDATE = d.value > today ? today : d.value;
-    renderTypeServices();
-  });
-  /* First load of this day, or anything older than 30 seconds: fetch again. */
-  if (!failed) ckMgRefresh(!rows);
+  if (ckSeesRecords()) ckLoadRecords(false);
 }
 function renderTypeServices() {
   var t = jobTypeById(S.manageType);
@@ -16314,7 +16144,7 @@ var CK = {
   busy: false,
   sheet: null, sheetOpen: null,
   sig: '', cardsHtml: '',
-  recRange: '7d',     /* opens on the last week, so yesterday's checklists are there before today's first one */
+  recRange: 'all',    /* opens on every record, old ones included */
   cache: {}, recErr: ''
 };
 
@@ -16398,13 +16228,13 @@ function renderChecklists() {
   html += ckNotifyCardHtml();
   html += '<div class="card sm muted" style="margin-top:12px">Each checklist opens only during its time window. ' +
     'Press <b>Open Checklist</b>, tick the items you have done and submit.</div>';
-  if (ME.role !== 'staff') html += '<div id="ck_records">' + ckRecordsHtml() + '</div>';
+  if (ckSeesRecords()) html += '<div id="ck_records">' + ckRecordsHtml() + '</div>';
   html += '<div style="height:20px"></div></div>';
   $('#app').innerHTML = html;
   tabbar();
   CK.sig = ckSig();
   ckLoadStatus(false);
-  if (ME.role !== 'staff') ckLoadRecords(false);
+  if (ckSeesRecords()) ckLoadRecords(false);
 }
 function ckClockHtml() {
   var n = CHKW.istParts(ckNow());
@@ -16470,12 +16300,12 @@ function ckPoll() {
     CK.sig = sig;
     CK.cache = {};
     ckLoadStatus(true);
-    if (S.tab === 'chk' && ME.role !== 'staff') ckLoadRecords(true);
+    if (ckSeesRecords() && document.getElementById('ck_records')) ckLoadRecords(true);
   }
   ckRefresh(false);
-  /* The Checklist page under Job Management: picks up newly sent
+  /* The records list, on whichever page shows it: picks up newly sent
      checklists (it fetches at most every 30 seconds). */
-  ckMgRefresh(false);
+  ckRecordsRefresh();
   /* The checklist tiles on Home. */
   ckHomeRefresh(false);
   var hk = document.getElementById('home_ck');
@@ -16757,58 +16587,57 @@ function ckCacheAge(from, to, loc) { var c = CK.cache[from + '|' + to + '|' + (l
 function ckScopeLoc() { return S.loc && S.loc !== 'ALL' ? S.loc : null; }
 function ckScopeLocs() { return ckScopeLoc() ? [ckScopeLoc()] : visibleLocations().map(function (l) { return l.id; }); }
 function ckTodayIST() { return CHKW.istParts(ckNow()).ymd; }
+/* Checklist records are for Admin EXE (the Super Admin) alone. Everyone
+   else still sends checklists and sees their own sheet once sent. */
+function ckSeesRecords() { return !!(ME && ME.role === 'superadmin'); }
+var CK_RANGES = [['today', 'Today'], ['yesterday', 'Yesterday'], ['7d', 'Last 7 days'], ['30d', 'Last 30 days'], ['all', 'All (old too)']];
 function ckRecDates() {
   var t = ckTodayIST();
   if (CK.recRange === 'yesterday') { var y = CHKW.addDaysYmd(t, -1); return [y, y]; }
   if (CK.recRange === '7d') return [CHKW.addDaysYmd(t, -6), t];
+  if (CK.recRange === '30d') return [CHKW.addDaysYmd(t, -29), t];
+  /* A day before the app existed: every record there is. */
+  if (CK.recRange === 'all') return ['2020-01-01', t];
   return [t, t];
 }
-/* Submitted records plus a row for every kitchen/checklist/shift in range
-   that has nothing: MISSED once its window has ended, AVAILABLE while open. */
-function ckWithGaps(rows, from, to, locs) {
-  var out = rows.slice(), have = {}, now = ckNow();
-  rows.forEach(function (r) { have[r.loc + '|' + r.type + '|' + r.shiftDate] = 1; });
-  for (var d = from; d <= to; d = CHKW.addDaysYmd(d, 1)) {
-    CHKW.WINDOWS.forEach(function (w) {
-      var b = CHKW.shiftBounds(w, d);
-      if (now < b.startsAt) return;
-      locs.forEach(function (loc) {
-        if (have[loc + '|' + w.type + '|' + d]) return;
-        out.push({ gap: true, loc: loc, type: w.type, shiftDate: d, status: now >= b.endsAt ? 'MISSED' : 'AVAILABLE', sortAt: b.startsAt });
-      });
-    });
-  }
-  var order = { LUNCH: 0, DINNER: 1, CLOSING: 2 };
-  out.sort(function (a, b) {
-    return a.shiftDate < b.shiftDate ? 1 : a.shiftDate > b.shiftDate ? -1 :
-      order[a.type] - order[b.type] || String(lname(a.loc)).localeCompare(String(lname(b.loc)));
-  });
-  return out;
-}
-function ckStatusPill(st) {
-  return st === 'SUBMITTED' ? pill('SUBMITTED', 'p-grn') : st === 'MISSED' ? pill('MISSED', 'p-red') :
-    st === 'AVAILABLE' ? pill('AVAILABLE', 'p-yel') : pill(st || 'CLOSED', 'p-gry');
-}
 function ckLoadRecords(force) {
+  if (!ckSeesRecords()) return;
   var d = ckRecDates(), loc = ckScopeLoc();
   if (!force && ckCached(d[0], d[1], loc)) return;
   if (!Api.token) { CK.recErr = CK_NET; ckPaintRecords(); return; }
   ckFetch(d[0], d[1], loc, force).then(function () { CK.recErr = ''; ckPaintRecords(); },
     function (err) { CK.recErr = err && err.offline ? CK_NET : 'Could not load checklist records. Please try again.'; ckPaintRecords(); });
 }
+/* Fetches the list again at most every 30 seconds while a page shows it,
+   and redraws only when a checklist was sent meanwhile. */
+var CK_RBUSY = false;
+function ckRecordsRefresh() {
+  if (CK_RBUSY || !ckSeesRecords() || !document.getElementById('ck_records')) return;
+  var d = ckRecDates(), loc = ckScopeLoc();
+  if (ckCacheAge(d[0], d[1], loc) < 30000) return;
+  var before = JSON.stringify(ckCached(d[0], d[1], loc));
+  CK_RBUSY = true;
+  ckFetch(d[0], d[1], loc, true).then(function (rows) {
+    CK_RBUSY = false;
+    if (JSON.stringify(rows) !== before) ckPaintRecords();
+  }, function () { CK_RBUSY = false; });
+}
+/* The same list on the Checklist page and under Job Management. */
 function ckPaintRecords() {
   var el = document.getElementById('ck_records');
-  if (el && S.tab === 'chk') el.innerHTML = ckRecordsHtml();
+  if (el) el.innerHTML = ckRecordsHtml();
 }
 /* "20/24", in orange when items were left unticked. */
 function ckTickedCell(r) {
   var n = ckDoneCount(r), all = ckTotalCount(r);
   return '<span class="b" style="color:' + (n < all ? 'var(--org)' : 'var(--grn)') + '">' + n + '/' + all + '</span>';
 }
+/* One plain list: what was sent, where, by whom, and how much was ticked.
+   Tap a row to see every item. */
 function ckRecordsHtml() {
   var d = ckRecDates(), rows = ckCached(d[0], d[1], ckScopeLoc());
-  var html = '<div class="sec-t">Checklist records</div><div class="chips">' +
-    [['today', 'Today'], ['yesterday', 'Yesterday'], ['7d', 'Last 7 days']].map(function (c) {
+  var html = '<div class="sec-t">Checklist records' + (rows ? ' · ' + rows.length : '') + '</div><div class="chips">' +
+    CK_RANGES.map(function (c) {
       return '<button class="chip' + (CK.recRange === c[0] ? ' on' : '') + '" data-a="ckRange" data-x="' + c[0] + '">' + c[1] + '</button>';
     }).join('') + '</div>';
   if (!rows) {
@@ -16816,22 +16645,24 @@ function ckRecordsHtml() {
       ? '<div class="card sm"><b>' + h(CK.recErr) + '</b> <button class="btn sec sm" data-a="ckReload" style="margin-left:8px">Try again</button></div>'
       : '<div class="card center sm muted">Loading checklist records…</div>');
   }
-  var all = ckWithGaps(rows, d[0], d[1], ckScopeLocs());
-  var n = { SUBMITTED: 0, MISSED: 0, AVAILABLE: 0 };
-  all.forEach(function (r) { if (n[r.status] !== undefined) n[r.status]++; });
-  html += '<div class="grid3">' + statCard(n.SUBMITTED, 'Submitted', 'var(--grn)') + statCard(n.MISSED, 'Missed', 'var(--red)') +
-    statCard(n.AVAILABLE, 'Open now', 'var(--yel)') + '</div>';
-  if (!all.length) return html + '<div class="card empty" style="margin-top:12px"><div class="ic">📋</div>No checklists yet for this period.</div>';
+  if (!rows.length) return html + '<div class="card empty" style="margin-top:12px"><div class="ic">📋</div>No checklist was sent in this period.</div>';
+  var order = { LUNCH: 0, DINNER: 1, CLOSING: 2 };
+  var list = rows.slice().sort(function (a, b) {
+    return a.shiftDate !== b.shiftDate ? (a.shiftDate < b.shiftDate ? 1 : -1)
+      : (order[a.type] - order[b.type]) || String(lname(a.loc)).localeCompare(String(lname(b.loc)));
+  });
   html += '<div class="card pad0" style="margin-top:12px"><div class="scroll-x"><table class="tbl">' +
-    '<tr><th>User</th><th>Checklist</th><th>Location</th><th>Date</th><th>Time</th><th>Ticked</th><th>Status</th></tr>' +
-    all.slice(0, 400).map(function (r) {
-      return '<tr' + (r.gap ? '' : ' data-a="ckView" data-x="' + h(r.id) + '" style="cursor:pointer"') + '><td><b>' + (r.gap ? '<span class="muted">—</span>' : h(r.userName)) + '</b></td>' +
-        '<td>' + CK_STYLE[r.type].short + '</td><td class="xs">' + (r.loc ? h(lname(r.loc)) : '—') + '</td>' +
-        '<td style="white-space:nowrap">' + fmtD(r.shiftDate) + '</td><td style="white-space:nowrap">' + (r.gap ? '—' : ckTime(r.submittedAt)) + '</td>' +
-        '<td style="white-space:nowrap">' + (r.gap ? '—' : ckTickedCell(r)) + '</td>' +
-        '<td>' + ckStatusPill(r.status) + '</td></tr>';
+    '<tr><th>Date</th><th>Restaurant</th><th>Checklist</th><th>Sent by</th><th>Ticked</th></tr>' +
+    list.map(function (r) {
+      var st = CK_STYLE[r.type];
+      return '<tr data-a="ckView" data-x="' + h(r.id) + '" style="cursor:pointer">' +
+        '<td style="white-space:nowrap"><b>' + fmtD(r.shiftDate) + '</b></td>' +
+        '<td class="sm">' + (r.loc ? h(lname(r.loc)) : '—') + '</td>' +
+        '<td class="sm" style="white-space:nowrap">' + (st ? st.icon + ' ' + h(st.short) : h(r.type)) + '</td>' +
+        '<td class="sm">' + h(r.userName) + '<div class="xs muted">' + ckTime(r.submittedAt) + ' IST</div></td>' +
+        '<td style="white-space:nowrap">' + ckTickedCell(r) + '</td></tr>';
     }).join('') + '</table></div></div>' +
-    '<div class="card sm muted" style="margin-top:12px">“Submitted” means the user submitted the checklist in the app inside the time window. “Ticked” shows how many items they ticked; the rest were left not done. Tap a submitted row to see every item.</div>';
+    '<div class="card sm muted" style="margin-top:12px">Tap a row to see every item of that checklist.</div>';
   return html;
 }
 /* ---------------- ROUTER ---------------- */
@@ -16946,7 +16777,6 @@ document.addEventListener('click', function (ev) {
     }
     case 'mgJobs': MGMT_JOBS = x; render(); break;
     case 'mgFilter': MGMT_FILTER = x; render(); break;
-    case 'ckMgRetry': CK_MERR = null; render(); break;
     case 'ckNotifyOn': ckNotifyOn(); break;
     case 'openType': if (!perm().superadmin) break; S.manage = 'type'; S.manageType = x; MGMT_Q = ''; MGMT_FILTER = 'all'; render(); break;
     case 'addJobType': if (!perm().superadmin) break; JOBT_ERR = ''; closeSheet(); jobTypeForm(null); break;
@@ -17225,8 +17055,6 @@ document.addEventListener('click', function (ev) {
     case 'ckView': ckViewRec(x); break;
     case 'ckTick': { var tp = x.split(':'); ckTick(tp[0], +tp[1], el); break; }
     case 'ckRange': CK.recRange = x; CK.recErr = ''; ckPaintRecords(); ckLoadRecords(false); break;
-    case 'ckMgRange': if (CK_MRANGES.some(function (c) { return c[0] === x; })) { CK_MRANGE = x; renderTypeServices(); } break;
-    case 'ckMgDay': if (/^\d{4}-\d{2}-\d{2}$/.test(x)) { CK_MDATE = x; renderTypeServices(); } break;
     case 'ckReload': CK.recErr = ''; ckPaintRecords(); ckLoadRecords(true); break;
   }
 });

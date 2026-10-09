@@ -13,8 +13,8 @@
    Endpoints:
      GET  /api/checklists/status   windows right now + my submissions (everyone)
      POST /api/checklists          submit { type, loc?, answers } (not auditors)
-     GET  /api/checklists          records for a date range (not kitchen staff)
-     GET  /api/checklists/:id      one record
+     GET  /api/checklists          records for a date range (Super Admin only)
+     GET  /api/checklists/:id      one record (Super Admin, or the sender)
    --------------------------------------------------------------------------- */
 
 var express = require('express');
@@ -31,8 +31,9 @@ router.use(requireAuth);
 
 /* Mirrors ROLES[].readonly in index.html. Auditors look; they do not submit. */
 var READONLY_ROLES = ['auditor'];
-/* Kitchen staff see their own checklists but not everyone else's. */
-var NO_LIST_ROLES = ['staff'];
+/* Checklist records are read by Admin EXE (the Super Admin) alone.
+   Everyone else sees only what they sent themselves. */
+function seesRecords(role) { return role === 'superadmin'; }
 
 var LOC_FORMAT = /^[A-Z0-9-]{2,40}$/;
 var YMD = /^\d{4}-\d{2}-\d{2}$/;
@@ -152,7 +153,7 @@ router.post('/', asyncHandler(function (req, res) {
    GET /?from=YYYY-MM-DD&to=YYYY-MM-DD&loc=
    --------------------------------------------------------------------------- */
 router.get('/', asyncHandler(function (req, res) {
-  if (NO_LIST_ROLES.indexOf(req.auth.role) > -1) {
+  if (!seesRecords(req.auth.role)) {
     return fail(res, 403, 'You do not have permission to do that', 'FORBIDDEN');
   }
   var today = windows.istParts(Date.now()).ymd;
@@ -184,9 +185,7 @@ router.get('/:id', asyncHandler(function (req, res) {
   return checklists.findById(id).then(function (rec) {
     if (!rec) return fail(res, 404, 'Not found', 'NOT_FOUND');
     var own = rec.userId === req.auth.id;
-    var mayList = NO_LIST_ROLES.indexOf(req.auth.role) === -1 &&
-      (seesAllLocations(req.auth.role) || (req.auth.loc && rec.loc === req.auth.loc));
-    if (!own && !mayList) return fail(res, 404, 'Not found', 'NOT_FOUND');
+    if (!own && !seesRecords(req.auth.role)) return fail(res, 404, 'Not found', 'NOT_FOUND');
     res.set('Cache-Control', 'private, max-age=300');
     res.json({ checklist: rec });
   });

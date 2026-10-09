@@ -154,7 +154,8 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     _loadRecords();
   }
 
-  bool get _mayList => S.me?['role'] != 'staff';
+  /* Checklist records are for Admin EXE (the Super Admin) alone. */
+  bool get _mayList => S.me?['role'] == 'superadmin';
 
   (String, String) get _dates {
     final t = istYmd();
