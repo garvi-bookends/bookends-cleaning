@@ -41,6 +41,11 @@ button,input,select,textarea{font:inherit;color:inherit}
 .hdr h1 small{display:block;font-size:11px;font-weight:500;opacity:.72;letter-spacing:.6px;text-transform:uppercase}
 .iconbtn{background:rgba(255,255,255,.14);border:0;color:#fff;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:19px;cursor:pointer}
 .iconbtn:active{background:rgba(255,255,255,.28)}
+.iconbtn svg{width:21px;height:21px;fill:currentColor}
+.iconbtn.sq svg{width:16px;height:16px}
+.big .bi svg{width:32px;height:32px;fill:var(--brand)}
+.mgmenu-ic svg{width:20px;height:20px;fill:var(--brand)}
+.ck-ic svg{width:24px;height:24px;fill:var(--brand)}
 .badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:10px;font-weight:800;min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 4px;border:2px solid var(--brand)}
 .rel{position:relative}
 .locbar{margin-top:10px}
@@ -475,7 +480,7 @@ body{background:linear-gradient(180deg,#f8f9fe 0%,#edf0fa 100%) fixed}
 @media print{body{background:#fff}.card{box-shadow:none;background-image:none}}
 
 /* ---------- dark mode ----------
-   Switched with the 🌙 / ☀️ button in the header (kept per device). The
+   Switched with the moon / sun button in the header (kept per device). The
    shared colours change, and so does every light surface written as a
    fixed colour above or inline in the pages. Labels for printing stay
    black on white. */
@@ -10647,7 +10652,7 @@ window.onerror = function (msg, src, line) {
   var a = document.getElementById('app');
   if (!a) return;
   a.innerHTML = '<div style="padding:26px;font-family:-apple-system,Segoe UI,Arial,sans-serif">' +
-    '<div style="font-size:38px">⚠️</div>' +
+    '' +
     '<h2 style="margin:8px 0 6px;font-size:19px">The app could not start</h2>' +
     '<p style="color:#626c87;font-size:14px;line-height:1.5">Please close this tab and open the link again. ' +
     'If it keeps happening, send this message to the Super Admin:</p>' +
@@ -11327,10 +11332,10 @@ function expiryStatus(expiry) {
 }
 function expiryState(expDate) {
   var d = daysBetween(ymd(today()), expDate);
-  if (d < 0)   return { k: 'expired', label: 'EXPIRED',      cls: 'p-red', color: 'var(--red)', days: d, emoji: '🔴' };
-  if (d <= 7)  return { k: 'soon',    label: d + 'd LEFT',   cls: 'p-org', color: 'var(--org)', days: d, emoji: '🟠' };
-  if (d <= 30) return { k: 'month',   label: d + 'd LEFT',   cls: 'p-yel', color: 'var(--yel)', days: d, emoji: '🟡' };
-  return { k: 'safe', label: 'SAFE', cls: 'p-grn', color: 'var(--grn)', days: d, emoji: '🔵' };
+  if (d < 0)   return { k: 'expired', label: 'EXPIRED',      cls: 'p-red', color: 'var(--red)', days: d, emoji: '' };
+  if (d <= 7)  return { k: 'soon',    label: d + 'd LEFT',   cls: 'p-org', color: 'var(--org)', days: d, emoji: '' };
+  if (d <= 30) return { k: 'month',   label: d + 'd LEFT',   cls: 'p-yel', color: 'var(--yel)', days: d, emoji: '' };
+  return { k: 'safe', label: 'SAFE', cls: 'p-grn', color: 'var(--grn)', days: d, emoji: '' };
 }
 
 /* ---------------- seeded RNG ---------------- */
@@ -12572,8 +12577,6 @@ function cleanForm() {
     LOCATIONS.map(function (L) { return '<option value="' + h(L.id) + '">' + h(L.name) + '</option>'; }).join('') +
     '</select></label></div>' +
 
-    '<div class="card sm muted" style="margin-top:10px">A monthly heavy job is scheduled once a month. A weekly job runs every week — ' +
-    'pin it to a weekday, or let it spread across the week with the others.</div>' +
 
     '<div class="btnrow" style="margin-top:12px">' +
     '<button class="btn sec" data-a="closeSheet">Cancel</button>' +
@@ -12735,6 +12738,12 @@ function ic(name) {
     user: 'M12 12a5 5 0 10-5-5 5 5 0 005 5zm0 2c-4 0-9 2-9 5v3h18v-3c0-3-5-5-9-5z',
     briefcase: 'M9 4h6a2 2 0 012 2v1h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2h3V6a2 2 0 012-2zm0 3h6V6H9z',
     moon: 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z',
+    edit: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75z',
+    key: 'M12.65 10A6 6 0 107 16a6 6 0 005.65-4H17v4h4v-4h2v-2zM7 14a2 2 0 110-4 2 2 0 010 4z',
+    eye: 'M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 11.5a4.5 4.5 0 110-9 4.5 4.5 0 010 9zm0-7a2.5 2.5 0 100 5 2.5 2.5 0 000-5z',
+    trash: 'M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z',
+    list: 'M3 13h2v-2H3zm0 4h2v-2H3zm0-8h2V7H3zm4 4h14v-2H7zm0 4h14v-2H7zM7 7v2h14V7z',
+    sun: 'M12 7a5 5 0 100 10 5 5 0 000-10zM11 1h2v3h-2zm0 19h2v3h-2zM1 11h3v2H1zm19 0h3v2h-3zM4.22 5.64l1.42-1.42 2.12 2.12-1.42 1.42zm12.02 12.02l1.42-1.42 2.12 2.12-1.42 1.42zM4.22 18.36l2.12-2.12 1.42 1.42-2.12 2.12zM16.24 6.34l2.12-2.12 1.42 1.42-2.12 2.12z',
     check: 'M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm5.6 13.2l7-7-1.4-1.4-5.6 5.6-2.8-2.8-1.4 1.4z'
   }[name];
   return '<svg viewBox="0 0 24 24"><path d="' + p + '"/></svg>';
@@ -12759,7 +12768,7 @@ function header(title, sub) {
   }
   return '<div class="hdr"><div class="hdr-row">' +
     '<h1>' + h(title) + '<small>' + h(sub) + (perm().manage ? cloudDot() : '') + '</small></h1>' +
-    '<button class="iconbtn thbtn" data-a="theme" title="' + (isDark() ? 'Light mode' : 'Dark mode') + '">' + (isDark() ? '☀️' : '🌙') + '</button>' +
+    '<button class="iconbtn thbtn" data-a="theme" title="' + (isDark() ? 'Light mode' : 'Dark mode') + '">' + ic(isDark() ? 'sun' : 'moon') + '</button>' +
     '<button class="iconbtn rel" data-a="alerts">' + ic('bell') + (al ? '<span class="badge">' + (al > 99 ? '99+' : al) + '</span>' : '') + '</button>' +
     '<button class="iconbtn" data-a="me">' + h(initials(ME.name)) + '</button>' +
     '</div>' + locSel + '</div>';
@@ -12845,7 +12854,7 @@ function tabbar() {
   }
 
   /* Dark Mode, at the foot of the sidebar: a moon, the words and a switch.
-     The phone's bar has no room for it; there it is the header's 🌙. */
+     The phone's bar has no room for it; there it is the header's moon button. */
   nav += '<button class="tab thtab" data-a="theme" role="switch" aria-checked="' + isDark() + '">' + ic('moon') +
     '<span>Dark Mode</span><i class="tsw' + (isDark() ? ' on' : '') + '"></i></button>';
   $('#tabbar').innerHTML = '<div class="tabs"><div class="tabs-in' +
@@ -13012,7 +13021,7 @@ function doSignup() {
 
 function renderSignupDone(u) {
   authShell(
-    '<div class="card center"><div style="font-size:40px">✅</div>' +
+    '<div class="card center">' +
     '<div class="b" style="font-size:18px;margin-top:6px">Account created</div>' +
     '<div class="sm muted" style="margin-top:4px">Thanks, ' + h(u.name.split(' ')[0]) + '.</div>' +
     '<div class="card" style="margin-top:14px;text-align:left"><div class="xs muted b">YOUR USERNAME</div><div class="b" style="font-size:20px">' + h(u.uid) + '</div></div>' +
@@ -13055,7 +13064,7 @@ function doForgot() {
     FORGOT_BUSY = false; FORGOT_ERR = '';
     LOGIN_UID = uid;
     authShell(
-      '<div class="card center"><div style="font-size:40px">📨</div>' +
+      '<div class="card center">' +
       '<div class="b" style="font-size:18px;margin-top:6px">Request sent</div>' +
       '<div class="sm muted" style="margin-top:8px">' + h(data.message) + '</div>' +
       '<div class="sm muted" style="margin-top:8px">When you sign in with the temporary password, you will be asked to choose your own.</div></div>' +
@@ -13122,7 +13131,6 @@ function savePw(force) {
 
 function changePwSheet() {
   openSheet('Change your password',
-    '<div class="card sm muted">Your ID is <b>' + h(ME.uid) + '</b>. It cannot be changed — only an Execution Head can do that.</div>' +
     '<div class="card">' +
     /* Asked for outside the forced-change flow: it stops a phone left
        unlocked on a counter being used to take the account over. */
@@ -13144,7 +13152,7 @@ function renderSimpleHome() {
 
   var html = '<div class="hdr"><div class="hdr-row">' +
     '<h1 style="font-size:19px">Hi ' + h(ME.name.split(' ')[0]) + '<small>' + h(lname(loc)) + '</small></h1>' +
-    '<button class="iconbtn thbtn" data-a="theme" title="' + (isDark() ? 'Light mode' : 'Dark mode') + '">' + (isDark() ? '☀️' : '🌙') + '</button>' +
+    '<button class="iconbtn thbtn" data-a="theme" title="' + (isDark() ? 'Light mode' : 'Dark mode') + '">' + ic(isDark() ? 'sun' : 'moon') + '</button>' +
     '<button class="iconbtn rel" data-a="alerts">' + ic('bell') + (unreadAlerts().length ? '<span class="badge">' + unreadAlerts().length + '</span>' : '') + '</button>' +
     '<button class="iconbtn" data-a="me">' + h(initials(ME.name)) + '</button></div></div>';
 
@@ -13154,18 +13162,17 @@ function renderSimpleHome() {
      person's job types reach that section — a card that bounces back to
      Home is worse than no card. */
   var canClean = tabAllowed('clean'), canLab = tabAllowed('lab'), canExp = tabAllowed('exp');
-  if (canClean) html += bigBtn('🧽', '#e8f0fb', 'CLEANING', todo.length ? todo.length + ' job' + (todo.length > 1 ? 's' : '') + ' to do' : 'All jobs done ✓', todo.length || '', 'tab', 'clean');
-  if (canLab) html += bigBtn('🏷️', '#fff7e2', 'LABEL A PRODUCT', 'Name it, set the dates, add a photo', noLabel || '', 'addProduct', '');
-  if (canExp) html += bigBtn('📅', '#fde9e4', 'CHECK EXPIRY', (e.expired + e.soon) ? (e.expired ? e.expired + ' expired' : '') + (e.expired && e.soon ? ' · ' : '') + (e.soon ? e.soon + ' expiring soon' : '') : 'Nothing expiring', (e.expired + e.soon) || '', 'tab', 'exp');
+  if (canClean) html += bigBtn(ic('clean'), '#e8f0fb', 'CLEANING', todo.length ? todo.length + ' job' + (todo.length > 1 ? 's' : '') + ' to do' : 'All jobs done ✓', todo.length || '', 'tab', 'clean');
+  if (canLab) html += bigBtn(ic('lab'), '#fff7e2', 'LABEL A PRODUCT', 'Name it, set the dates, add a photo', noLabel || '', 'addProduct', '');
+  if (canExp) html += bigBtn(ic('exp'), '#fde9e4', 'CHECK EXPIRY', (e.expired + e.soon) ? (e.expired ? e.expired + ' expired' : '') + (e.expired && e.soon ? ' · ' : '') + (e.soon ? e.soon + ' expiring soon' : '') : 'Nothing expiring', (e.expired + e.soon) || '', 'tab', 'exp');
 
   if (canClean && todo.length) {
     html += '<div class="sec-t">Jobs still to do this week</div><div class="card pad0">' + todo.slice(0, 8).map(taskRow).join('') + '</div>';
   }
   if (canExp && e.expired) {
-    html += '<div class="sec-t">Throw these away 🔴</div><div class="card pad0">' +
+    html += '<div class="sec-t">Throw these away</div><div class="card pad0">' +
       productsFor(loc).filter(function (p) { return expiryState(p.expiry).k === 'expired'; }).slice(0, 6).map(prodRow).join('') + '</div>';
   }
-  html += '<div class="card sm muted center" style="margin-top:16px">Every job needs a <b>before</b> and <b>after</b> photo.<br>Every product needs a <b>photo</b> and a <b>label</b>.</div>';
   html += '<div style="height:20px"></div></div>';
   $('#app').innerHTML = html;
   tabbar();
@@ -13206,7 +13213,7 @@ function pendingSignupsCard() {
   if (PENDING_SIGNUPS) {
     var n = PENDING_SIGNUPS;
     out += '<div class="card" data-a="users" style="cursor:pointer;background:#fff7e2;border-color:#f6dfa3">' +
-      '<div class="row"><div style="font-size:26px">👤</div><div class="grow">' +
+      '<div class="row"><div class="grow">' +
       '<div class="b">' + n + ' new account' + (n === 1 ? '' : 's') + ' waiting for approval</div>' +
       '<div class="sm muted">Someone signed up. Tap to choose their role and approve or reject.</div>' +
       '</div><div class="b" style="color:var(--org)">Review ›</div></div></div>';
@@ -13214,7 +13221,7 @@ function pendingSignupsCard() {
   if (RESET_REQUESTS) {
     var r = RESET_REQUESTS;
     out += '<div class="card" data-a="superDash" style="cursor:pointer;background:#fff7e2;border-color:#f6dfa3">' +
-      '<div class="row"><div style="font-size:26px">🔑</div><div class="grow">' +
+      '<div class="row"><div class="grow">' +
       '<div class="b">' + r + ' password reset request' + (r === 1 ? '' : 's') + '</div>' +
       '<div class="sm muted">Someone forgot their password. Tap to set a temporary one.</div>' +
       '</div><div class="b" style="color:var(--org)">Open ›</div></div></div>';
@@ -13250,7 +13257,7 @@ function ckHomeHtml() {
       now >= b.endsAt ? 'var(--red)' : now >= b.startsAt ? 'var(--org)' : 'var(--mut)';
     return '<button class="stat" style="border-color:' + col + ';cursor:pointer" data-a="tab" data-x="chk">' +
       '<b style="color:' + col + '">' + (sent === null ? '…' : sent) + '/' + locs.length + '</b>' +
-      '<span>' + CK_STYLE[x.w.type].icon + ' ' + CK_STYLE[x.w.type].short + '</span></button>';
+      '<span>' + CK_STYLE[x.w.type].short + '</span></button>';
   }).join('') + '</div>';
 }
 /* Fetches those shifts again (at most every 30 seconds) while Home is open,
@@ -13322,8 +13329,8 @@ function renderHome() {
   var quick2 = [];
   /* Approving happens in Task Review, so that is where this goes, showing
      what is waiting — the same count it opens to. */
-  if (p.approve) quick2.push('<button class="btn sec" data-a="goReview">☑ Approvals (' + tasksAwaitingApproval().length + ')</button>');
-  else if (!p.approve && tabAllowed('lab')) quick2.push('<button class="btn sec" data-a="tab" data-x="lab">🏷 Print label</button>');
+  if (p.approve) quick2.push('<button class="btn sec" data-a="goReview">Approvals (' + tasksAwaitingApproval().length + ')</button>');
+  else if (!p.approve && tabAllowed('lab')) quick2.push('<button class="btn sec" data-a="tab" data-x="lab">Print label</button>');
   if (quick2.length) html += '<div class="btnrow">' + quick2.join('') + '</div>';
 
   /* location league table */
@@ -13349,7 +13356,7 @@ function renderHome() {
     var mine = tasksFor(S.loc, wk).filter(function (t) { return ME.role !== 'staff' || assignedToMe(t); });
     var todo = mine.filter(function (t) { return t.status === 'pending' || t.status === 'rejected'; }).slice(0, 5);
     html += '<div class="sec-t">' + (ME.role === 'staff' ? 'My tasks this week' : 'Needs action this week') + '</div><div class="card pad0">';
-    html += todo.length ? todo.map(taskRow).join('') : '<div class="empty"><div class="ic">🎉</div>All caught up for this week</div>';
+    html += todo.length ? todo.map(taskRow).join('') : '<div class="empty">All caught up for this week</div>';
     html += '</div>';
   }
 
@@ -13393,7 +13400,7 @@ function alertsSheet() {
       '<div class="xs" style="margin-top:2px"><b>' + h(a.type) + '</b> · ' + h(lname(a.loc)) + '</div>' +
       '<div class="xs muted trunc">' + h(a.body) + '</div></span>' +
       '<span class="dot" style="background:var(--blue)"></span></button>';
-  }).join('') : '<div class="empty"><div class="ic">✅</div>No new notifications</div>';
+  }).join('') : '<div class="empty">No new notifications</div>';
   openSheet('Notifications (' + al.length + ')',
     '<div class="card pad0">' + body + '</div>' +
     (al.length ? '<button class="btn sec" data-a="readAll">Mark all as read</button>' : ''));
@@ -13416,15 +13423,15 @@ function meSheet() {
     '<div class="xs muted">Login ID <b>' + h(ME.uid) + '</b></div></div></div></div>' +
     '<div class="sec-t">Your permissions</div><div class="card"><ul style="margin:0;padding-left:20px" class="sm">' +
     caps.map(function (c) { return '<li style="margin:5px 0">' + h(c) + '</li>'; }).join('') + '</ul></div>' +
-    '<button class="btn sec" data-a="changePw" style="margin-bottom:10px">🔒 Change my password</button>' +
+    '<button class="btn sec" data-a="changePw" style="margin-bottom:10px">Change my password</button>' +
     /* No way in to people or jobs here: User Management, Job Management and
        Task Review are the Super Admin's alone, reached from the Management
        menu, and nobody else is offered a side door to them. */
-    (p.manage ? '<button class="btn sec" data-a="activity" style="margin-bottom:10px">🕘 Audit log</button>' : '') +
+    (p.manage ? '<button class="btn sec" data-a="activity" style="margin-bottom:10px">Audit log</button>' : '') +
     /* Emptying the app is the Super Admin's alone, and it sits here rather
        than among the management screens: it is not a way of managing the
        work, it is how you hand the app to somebody else. */
-    (p.superadmin ? '<button class="btn sec" data-a="wipeAsk" style="margin-bottom:10px;color:var(--red)">⚠️ Wipe All Data</button>' : '') +
+    (p.superadmin ? '<button class="btn sec" data-a="wipeAsk" style="margin-bottom:10px;color:var(--red)">Wipe All Data</button>' : '') +
     '<div class="sec-t">Account</div>' +
     '<button class="btn no" data-a="logout">Log out</button>' +
     '<div class="sm muted center" style="margin-top:10px">You stay signed in on this phone until you log out.</div>');
@@ -13433,16 +13440,16 @@ function meSheet() {
 /* ---------- help ---------- */
 function helpSheet() {
   var steps = ME.role === 'staff' || ME.role === 'manager' ? [
-    ['🧽', 'Do a cleaning job', 'Tap CLEANING, pick a job, clean the area, take a photo, then tap the blue button. Your manager approves it.'],
-    ['📷', 'A photo is compulsory', 'The blue button only appears once a photo is taken. No photo, no record.'],
-    ['🏷️', 'Label a product', 'Tap LABEL A PRODUCT, take a photo, fill in the name and dates, save. The label with the QR code prints straight away — stick it on the container.'],
-    ['📅', 'Check expiry', 'Red means throw it away today. Orange means use it within a week. Check this at the start of every shift.'],
-    ['⛶', 'Scan a label', 'Point the camera at any QR label to pull up that product instantly.']
+    ['', 'Do a cleaning job', 'Tap CLEANING, pick a job, clean the area, take a photo, then tap the blue button. Your manager approves it.'],
+    ['', 'A photo is compulsory', 'The blue button only appears once a photo is taken. No photo, no record.'],
+    ['', 'Label a product', 'Tap LABEL A PRODUCT, take a photo, fill in the name and dates, save. The label with the QR code prints straight away — stick it on the container.'],
+    ['', 'Check expiry', 'Red means throw it away today. Orange means use it within a week. Check this at the start of every shift.'],
+    ['', 'Scan a label', 'Point the camera at any QR label to pull up that product instantly.']
   ] : [
-    ['📊', 'Your dashboard', 'One score per location out of 100: 40% cleaning, 35% expiry control, 25% labelling. Tap any location for the detail.'],
-    ['✅', 'Approvals', 'Cleaning jobs come to you with photo evidence. Approve, or reject with a reason and it goes back to the team.'],
-    ['🔔', 'Alerts', 'The bell shows overdue jobs, missing photos, expired stock and missing labels across every kitchen.'],
-    ['👥', 'People', 'Create users, change roles, reset forgotten passwords.']
+    ['', 'Your dashboard', 'One score per location out of 100: 40% cleaning, 35% expiry control, 25% labelling. Tap any location for the detail.'],
+    ['', 'Approvals', 'Cleaning jobs come to you with photo evidence. Approve, or reject with a reason and it goes back to the team.'],
+    ['', 'Alerts', 'The bell shows overdue jobs, missing photos, expired stock and missing labels across every kitchen.'],
+    ['', 'People', 'Create users, change roles, reset forgotten passwords.']
   ];
   openSheet('How to use the app',
     '<div class="card pad0">' + steps.map(function (s) {
@@ -13480,13 +13487,13 @@ function wipeAsk() {
   if (!perm().superadmin) return;
   _dlgCb = null;
   $('#dialog').innerHTML = '<div class="dlg-ovl"><div class="dlg">' +
-    '<h3>⚠️ Wipe all data</h3>' +
+    '<h3>Wipe all data</h3>' +
     '<p>This permanently deletes the <b>cleaning, label and expiry records</b> on the server and on every device. <b>It cannot be undone.</b></p>' +
     '<ul class="sm" style="margin:0 0 12px;padding-left:20px">' +
     wipeTally().map(function (s) { return '<li style="margin:4px 0">' + h(s) + '</li>'; }).join('') +
     '</ul>' +
     '<div class="sm muted" style="margin-bottom:12px"><b>Nothing you set up is touched.</b> Everyone keeps their account and their password, and every service, job type and assignment stays exactly as it is — only the records above are wiped. This week\'s empty jobs are generated again, as they are every week. A backup holds the records, not the photo files: those are deleted from the store and cannot come back.</div>' +
-    '<button class="btn sec" data-a="wipeBackup" style="margin-bottom:12px">⬇️ Download a backup first</button>' +
+    '<button class="btn sec" data-a="wipeBackup" style="margin-bottom:12px">Download a backup first</button>' +
     '<label class="f"><span>Type <b>' + WIPE_PHRASE + '</b> to continue</span>' +
     '<input class="inp" id="wipe_in" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="' + WIPE_PHRASE + '"></label>' +
     '<div class="btnrow"><button class="btn sec" data-a="dlgNo">Cancel</button>' +
@@ -13576,7 +13583,7 @@ function wipeRun(phrase) {
 var APP_VERSION = '1.0';
 function aboutSheet() {
   openSheet('About',
-    '<div class="card center"><div style="font-size:44px">🍳</div>' +
+    '<div class="card center">' +
     '<div class="b" style="font-size:19px;margin-top:4px">Bookends Cleaning</div>' +
     '<div class="sm muted">Version ' + APP_VERSION + '</div></div>' +
     '<div class="card">' +
@@ -13629,7 +13636,7 @@ function activityCountText() {
 }
 function activityRows(list) {
   if (!list.length) {
-    return '<div class="empty"><div class="ic">🕘</div>' +
+    return '<div class="empty">' +
       (LOG_Q || LOG_FILTER ? 'Nothing matches' : 'Nothing recorded yet') + '</div>';
   }
   var out = list.slice(0, LOG_SHOW).map(function (l) {
@@ -13707,7 +13714,7 @@ function taskRow(t) {
   var ph = t.before || t.after;
   var row = '<button class="lrow" data-a="task" data-x="' + t.id + '">' +
     (ph ? '<img class="thumb" src="' + photoSrc(t.after || t.before) + '">' :
-      '<span class="thumb" style="display:grid;place-items:center;color:#b6bdd6;font-size:19px">🧽</span>') +
+      '<span class="thumb" style="display:grid;place-items:center;color:#b6bdd6;font-size:19px"></span>') +
     '<span class="grow">' + cnameHtml(tkeyOf(t), cleanName(t), 't trunc') +
     '<div class="xs muted" style="margin:2px 0 5px">' + h(t.zone) + ' · ' + h(shortAssignees(t)) +
     ' · ' + fmtD(t.due) + (t.time ? ' · ' + h(fmtTime(t.time)) : '') + '</div>' +
@@ -13784,7 +13791,7 @@ function renderClean() {
   list.forEach(function (t) { if (f === 'all' && isTuesdayJob(t)) return; (zones[t.zone] = zones[t.zone] || []).push(t); });
   html += Object.keys(zones).length ? Object.keys(zones).map(function (z) {
     return '<div class="sec-t">' + h(z) + '</div><div class="card pad0">' + zones[z].map(taskRow).join('') + '</div>';
-  }).join('') : '<div class="card"><div class="empty"><div class="ic">🧼</div>Nothing here</div></div>';
+  }).join('') : '<div class="card"><div class="empty">Nothing here</div></div>';
   html += '<div style="height:20px"></div></div>';
   $('#app').innerHTML = html;
   tabbar();
@@ -13813,7 +13820,7 @@ function taskSheet(id) {
       '<div class="step ' + (hasPh ? '' : 'todo') + '"><span class="n">2</span><span class="sm b">Tap Send — it goes to the Super Admin</span></div></div>';
     body += hasPh
       ? '<button class="btn ok" data-a="markDone" data-x="' + t.id + '">➤ Send</button>'
-      : '<button class="btn" style="background:#d4d9ea" data-a="needPhotos">📷 Add a photo first</button>';
+      : '<button class="btn" style="background:#d4d9ea" data-a="needPhotos">Add a photo first</button>';
   }
   /* Approving happens in Task Review and nowhere else, so there is one queue
      to work through rather than two places to remember. */
@@ -13827,8 +13834,7 @@ function taskSheet(id) {
     body += '<div style="height:10px"></div><button class="btn sec" data-a="reopen" data-x="' + t.id + '">↺ Re-open task</button>';
   }
   if (canManageClean()) {
-    body += '<div class="card sm muted" style="margin-top:12px">Double-click the cleaning name above to rename it.</div>' +
-      '<div style="height:10px"></div><button class="btn no" data-a="deleteClean" data-x="' + h(tkeyOf(t)) + '">🗑 Delete cleaning</button>';
+    body += '<div style="height:10px"></div><button class="btn no" data-a="deleteClean" data-x="' + h(tkeyOf(t)) + '">Delete cleaning</button>';
   }
   openSheet('Cleaning task', body);
 }
@@ -13874,7 +13880,7 @@ function photoBox(t) {
   var v = t.before || t.after, p = perm(), can = !p.readonly && (p.all || ME.loc === t.loc) && (p.approve || t.approved !== true);
   if (!v) {
     return '<div class="photo tall" ' + (can ? 'data-a="shoot" data-x="' + t.id + '"' : '') + '>' +
-      '<div><div style="font-size:34px">📷</div><div class="ph-t" style="font-size:14px">' +
+      '<div><div class="ph-t" style="font-size:14px">' +
       (can ? 'TAP TO TAKE PHOTO' : 'NOT UPLOADED') + '</div></div></div>';
   }
   /* With a photo on it the box shows the picture whole, not cropped, and the
@@ -13919,10 +13925,10 @@ function closeView() {
 function prodRow(p) {
   var st = expiryState(p.expiry);
   return '<button class="lrow" data-a="product" data-x="' + p.id + '">' +
-    (p.photo ? '<img class="thumb" src="' + photoSrc(p.photo) + '">' : '<span class="thumb" style="display:grid;place-items:center;font-size:19px">📦</span>') +
+    (p.photo ? '<img class="thumb" src="' + photoSrc(p.photo) + '">' : '<span class="thumb" style="display:grid;place-items:center;font-size:19px"></span>') +
     '<span class="grow"><span class="t trunc">' + h(p.name) + '</span>' +
     '<div class="xs muted" style="margin:2px 0 5px">' + h(p.batch) + ' · ' + p.qty + ' ' + p.unit + ' · ' + h(p.storage) + '</div>' +
-    pill(st.emoji + ' ' + st.label, st.cls) + ' ' + (p.labelled ? '' : pill('NO LABEL', 'p-gry')) +
+    pill(st.label, st.cls) + ' ' + (p.labelled ? '' : pill('NO LABEL', 'p-gry')) +
     (isActive(p) ? '' : ' ' + pill('INACTIVE', 'p-gry')) +
     '</span><span class="chev">›</span></button>';
 }
@@ -13952,7 +13958,7 @@ function renderExpiry() {
     '</div>';
   if (e.expired || e.soon) {
     html += '<div class="card" style="background:#fff0ec;border-color:#f8d3ca"><div class="row">' +
-      '<div style="font-size:22px">⚠️</div><div class="grow sm"><b>' + (e.expired ? e.expired + ' expired item' + (e.expired > 1 ? 's' : '') + ' must be discarded now. ' : '') +
+      '<div class="grow sm"><b>' + (e.expired ? e.expired + ' expired item' + (e.expired > 1 ? 's' : '') + ' must be discarded now. ' : '') +
       (e.soon ? e.soon + ' item' + (e.soon > 1 ? 's' : '') + ' expire within 7 days.' : '') + '</b></div></div></div>';
   }
   html += '<label class="f" style="margin-top:12px"><span>Search</span>' +
@@ -14001,14 +14007,14 @@ function productSheet(id) {
     (p.photo ? '<img src="' + photoSrc(p.photo) + '" style="width:78px;height:78px;border-radius:12px;object-fit:cover">' : '') +
     '<div class="grow"><div class="b" style="font-size:17px;line-height:1.2">' + h(p.name) + '</div>' +
     '<div class="sm muted">' + (p.cat ? h(p.cat) + ' · ' : '') + h(lname(p.loc)) + '</div>' +
-    '<div style="margin-top:7px">' + pill(st.emoji + ' ' + (st.k === 'expired' ? 'EXPIRED ' + Math.abs(st.days) + 'd AGO' : st.k === 'safe' ? 'SAFE · ' + st.days + 'd LEFT' : st.label), st.cls) + '</div></div></div>' +
+    '<div style="margin-top:7px">' + pill((st.k === 'expired' ? 'EXPIRED ' + Math.abs(st.days) + 'd AGO' : st.k === 'safe' ? 'SAFE · ' + st.days + 'd LEFT' : st.label), st.cls) + '</div></div></div>' +
     /* The three the form asks for, and who added it. The name is the heading
        above. Everything else this record may carry is on its label, which is
        one tap away, rather than in a grid of dashes. */
     '<div class="grid2" style="margin-top:14px">' +
     kv('MFG date', fmtD(p.opened)) + kv('Expiry date', fmtD(p.expiry)) +
     kv('Added by', uname(p.by)) + '</div>';
-  if (st.k === 'expired') body += '<div class="card" style="background:#fde8e9;border-color:#f7c9cc"><b class="sm">🔴 Do not use. Discard and record wastage.</b></div>';
+  if (st.k === 'expired') body += '<div class="card" style="background:#fde8e9;border-color:#f7c9cc"><b class="sm">Do not use. Discard and record wastage.</b></div>';
   /* The label-status card was taken off this sheet. Its only action was to
      generate or reprint a label and its QR, and there is neither any more. */
   if (can) {
@@ -14075,10 +14081,10 @@ function productForm(id) {
        the second button opens the phone's pictures for one already taken. */
     '<label class="f"><span>Photo <span class="muted">(optional)</span></span></label>' +
     '<div class="photo tall" id="f_photobox" data-a="shootProduct">' + (f.photo ? '<img src="' + photoSrc(f.photo) + '">' :
-      '<div><div style="font-size:34px">📷</div><div class="ph-t" style="font-size:14px">TAP TO TAKE PHOTO</div></div>') + '</div>' +
+      '<div><div class="ph-t" style="font-size:14px">TAP TO TAKE PHOTO</div></div>') + '</div>' +
     '<div class="btnrow" style="margin-top:8px">' +
-    '<button class="btn sec" data-a="shootProduct">📷 Take photo</button>' +
-    '<button class="btn sec" data-a="pickProduct">🖼 Upload photo</button></div>' +
+    '<button class="btn sec" data-a="shootProduct">Take photo</button>' +
+    '<button class="btn sec" data-a="pickProduct">Upload photo</button></div>' +
     (f.photo ? '<button class="btn sec" data-a="dropProductPhoto" style="margin-top:8px;color:var(--red)">Remove photo</button>' : '') +
     '</div>' +
     '<div class="sec-t">Label</div>' +
@@ -14123,13 +14129,13 @@ function renderLabels() {
   html += '<div class="card pad0">' + (list.length ? list.map(function (p) {
     var st = expiryState(p.expiry);
     return '<button class="lrow" data-a="label" data-x="' + p.id + '">' +
-      '<span class="thumb" style="display:grid;place-items:center;font-size:19px;background:' + (p.labelled ? '#e8f0fb' : '#fde8e9') + '">' + (p.labelled ? '🏷' : '⚠️') + '</span>' +
+      '<span class="thumb" style="display:grid;place-items:center;font-size:19px;background:' + (p.labelled ? '#e8f0fb' : '#fde8e9') + '">' + (p.labelled ? '' : '!') + '</span>' +
       '<span class="grow"><span class="t trunc">' + h(p.name) + '</span>' +
       '<div class="xs muted" style="margin:2px 0 5px">' + (manyLocs ? h(lname(p.loc)) + ' · ' : '') + 'use by ' + fmtD(p.expiry) + '</div>' +
-      pill(p.labelled ? 'LABEL OK' : 'LABEL MISSING', p.labelled ? 'p-grn' : 'p-red') + ' ' + pill(st.emoji + ' ' + st.label, st.cls) +
+      pill(p.labelled ? 'LABEL OK' : 'LABEL MISSING', p.labelled ? 'p-grn' : 'p-red') + ' ' + pill(st.label, st.cls) +
       (isActive(p) ? '' : ' ' + pill('INACTIVE', 'p-gry')) +
       '</span><span class="chev">›</span></button>';
-  }).join('') : '<div class="empty"><div class="ic">🏷</div>Nothing here</div>') + '</div><div style="height:20px"></div></div>';
+  }).join('') : '<div class="empty">Nothing here</div>') + '</div><div style="height:20px"></div></div>';
   $('#app').innerHTML = html;
   /* The same form the Expiry page adds with: a label belongs to a product, so
      there is one record and both pages work from it. Saving goes straight on
@@ -14370,8 +14376,7 @@ function usersSheet() {
 }
 
 function renderUsersSheet(users) {
-  var body = '<button class="btn" data-a="addUser" style="margin-bottom:12px">＋ Create a new user</button>' +
-    '<div class="card sm muted">Everyone signs in with their own ID and password. Passwords are stored only as an encrypted hash — nobody, including you, can read them back. Change a role from the dropdown, tap 🔑 to reset a forgotten password back to <b>' + h(DEFAULT_PW) + '</b>, or ✕ to remove someone who has left.</div>';
+  var body = '<button class="btn" data-a="addUser" style="margin-bottom:12px">＋ Create a new user</button>';
 
   /* Self sign-ups waiting for a decision come first, since they are the only
      thing on this screen someone is actively waiting on. The admin picks the
@@ -14436,7 +14441,7 @@ function renderUsersSheet(users) {
               /* Only the Super Admin may set someone else's password, so the
                  key is not offered to the other admins — the server would
                  refuse it anyway. */
-              (perm().superadmin ? '<button class="iconbtn" style="background:#eceef7;color:var(--ink);width:38px;height:38px;font-size:15px" data-a="resetPw" data-x="' + u.id + '">🔑</button>' : '') +
+              (perm().superadmin ? '<button class="iconbtn" style="background:#eceef7;color:var(--ink);width:38px;height:38px;font-size:15px" data-a="resetPw" data-x="' + u.id + '" title="Reset password">' + ic('key') + '</button>' : '') +
               (u.id === ME.id ? '' : '<button class="iconbtn" style="background:#fbe5e6;color:var(--red);width:38px;height:38px" data-a="delUser" data-x="' + u.id + '">✕</button>')) +
           '</div>';
       }).join('') + '</div>';
@@ -14507,7 +14512,7 @@ function renderSuperSheet(users) {
           '<span class="thumb" style="display:grid;place-items:center;font-weight:800;color:var(--org);font-size:13px">' + h(initials(u.name)) + '</span>' +
           '<span class="grow"><span class="t sm">' + h(u.name) + '</span>' +
           '<div class="xs muted">Username <b>' + h(u.uid) + '</b> · asked ' + h(fmtDT(u.resetRequestedAt)) + '</div></span>' +
-          '<button class="btn" style="width:auto;min-height:40px;padding:6px 12px;font-size:13px" data-a="setPwFor" data-x="' + h(u.id) + '" data-n="' + h(u.name) + '">🔑 Set new password</button>' +
+          '<button class="btn" style="width:auto;min-height:40px;padding:6px 12px;font-size:13px" data-a="setPwFor" data-x="' + h(u.id) + '" data-n="' + h(u.name) + '">Set new password</button>' +
           '<button class="iconbtn" style="background:#eceef7;color:var(--ink);width:38px;height:38px" data-a="dismissReset" data-x="' + h(u.id) + '" data-n="' + h(u.name) + '" title="Dismiss">✕</button>' +
           '</div>';
       }).join('') + '</div>';
@@ -14524,8 +14529,6 @@ function renderSuperSheet(users) {
   var order = ['superadmin', 'exec', 'aexec', 'admin', 'hok', 'manager', 'staff', 'auditor'];
   active.sort(function (a, b) { return order.indexOf(a.role) - order.indexOf(b.role) || a.name.localeCompare(b.name); });
   body += '<div class="sec-t">All accounts (' + active.length + ')</div>' +
-    '<div class="card sm muted">Passwords are stored only as an encrypted one-way hash, so nobody can read them — including you. ' +
-    'To get someone back in, tap <b>🔑 Set new password</b>: you choose a temporary one, see it once, and they pick their own at next sign-in.</div>' +
     '<div class="card pad0">' +
     active.map(function (u) {
       var self = u.id === ME.id;
@@ -14534,10 +14537,10 @@ function renderSuperSheet(users) {
         '<span class="grow"><span class="t sm">' + h(u.name) + (self ? ' <span class="xs muted">(you)</span>' : '') + '</span>' +
         '<div class="xs muted">Username <b>' + h(u.uid) + '</b> · ' + h(ROLES[u.role] ? ROLES[u.role].label : u.role) + ' · ' + (u.loc ? h(lname(u.loc)) : 'All 8 locations') + '</div>' +
         '<div class="xs muted">' + superStatusLine(u) + '</div>' +
-        '<div class="xs muted">Password: 🔒 encrypted' + (u.mustChange ? ' · <span style="color:var(--org);font-weight:700">temporary, not yet changed</span>' : '') + '</div></span>' +
+        '<div class="xs muted">Password: encrypted' + (u.mustChange ? ' · <span style="color:var(--org);font-weight:700">temporary, not yet changed</span>' : '') + '</div></span>' +
         (self
-          ? '<button class="btn sec" style="width:auto;min-height:40px;padding:6px 12px;font-size:13px" data-a="changePw">🔒 Change mine</button>'
-          : '<button class="btn sec" style="width:auto;min-height:40px;padding:6px 12px;font-size:13px" data-a="setPwFor" data-x="' + h(u.id) + '" data-n="' + h(u.name) + '">🔑 Set new password</button>' +
+          ? '<button class="btn sec" style="width:auto;min-height:40px;padding:6px 12px;font-size:13px" data-a="changePw">Change mine</button>'
+          : '<button class="btn sec" style="width:auto;min-height:40px;padding:6px 12px;font-size:13px" data-a="setPwFor" data-x="' + h(u.id) + '" data-n="' + h(u.name) + '">Set new password</button>' +
             '<button class="btn sec" style="width:auto;min-height:40px;padding:6px 12px;font-size:13px;color:var(--red)" data-a="superDel" data-x="' + h(u.id) + '" data-n="' + h(u.name) + '" data-l="' + h(u.loc || '') + '">✕ Remove</button>') +
         '</div>';
     }).join('') + '</div>';
@@ -14588,7 +14591,7 @@ function setPasswordFor(id, name) {
       logAct('user', 'New password set for ' + data.user.name, data.user.loc);
       closeSheet();
       mgmtLoadUsers(true);
-      openSheet('New password set', '<div class="card center"><div style="font-size:40px">🔑</div>' +
+      openSheet('New password set', '<div class="card center">' +
             '<div class="b" style="font-size:18px;margin-top:6px">' + h(data.user.name) + '</div>' +
             '<div class="card" style="margin-top:14px;text-align:left"><div class="xs muted b">USERNAME</div><div class="b" style="font-size:20px">' + h(data.user.uid) + '</div>' +
             '<div class="xs muted b" style="margin-top:10px">TEMPORARY PASSWORD</div><div class="b" style="font-size:20px">' + h(data.password) + '</div></div>' +
@@ -14628,7 +14631,6 @@ function addUserSheet() {
     '</select></label>' +
     (NEWU_ERR ? '<div class="card" style="background:#fde8e9;border-color:#f7c9cc;margin:0 0 12px"><b class="sm">' + h(NEWU_ERR) + '</b></div>' : '') +
     '</div>' +
-    '<div class="card sm muted">They must choose their own password the first time they sign in, whichever one you set here.</div>' +
     '<div class="sec-t">Job Types</div><div class="card">' + jobTypeChecks('u', []) + '</div>' +
     '<button class="btn" data-a="saveUser">Create user</button>');
   var n = document.getElementById('u_name');
@@ -14693,7 +14695,7 @@ function saveUser() {
     Auth.loadRoster().catch(function () { });
 
     closeSheet();
-    openSheet('User created', '<div class="card center"><div style="font-size:40px">✅</div>' +
+    openSheet('User created', '<div class="card center">' +
       '<div class="b" style="font-size:18px;margin-top:6px">' + h(u.name) + '</div>' +
       '<div class="sm muted">' + ROLES[u.role].label + (u.loc ? ' · ' + h(lname(u.loc)) : ' · all 8 locations') + '</div>' +
       '<div class="card" style="margin-top:14px;text-align:left"><div class="xs muted b">LOGIN ID</div><div class="b" style="font-size:20px">' + h(u.uid) + '</div>' +
@@ -14708,12 +14710,9 @@ function saveUser() {
   });
 }
 function checklistSheet() {
-  var body = '<div class="card sm"><b>All-electric kitchens.</b> <span class="muted">No gas appliances anywhere in the group, so the checklist covers induction hobs, electric combi ovens, griddles, fryers and salamanders — plus a weekly electrical-safety wipe-down (dry cloth only around plug points).</span></div>' +
-    '<div class="card sm muted">' + servicesForType('W', null).length + ' weekly jobs are generated every Monday and ' + servicesForType('M', null).length +
-    ' heavy jobs on the 1st of each month — for all 8 locations.</div>';
+  var body = '';
   if (canManageClean()) {
-    body += '<button class="btn ok" data-a="addClean">＋ Add Cleaning</button>' +
-      '<div class="card sm muted" style="margin-top:10px">Double-click a cleaning name to rename it. A rename or a delete applies at every kitchen.</div>';
+    body += '<button class="btn ok" data-a="addClean">＋ Add Cleaning</button>';
   }
   [['Every week', servicesForType('W', null)], ['Once a month', servicesForType('M', null)]].forEach(function (grp) {
     var zones = {}, order = [];
@@ -14728,7 +14727,7 @@ function checklistSheet() {
             (o && o.name && b0 && b0.area !== o.name ? '<div class="xs muted">was “' + h(b0.area) + '”</div>' : '') +
             (t.custom ? '<div class="xs muted">Added' + (t.loc ? ' · ' + h(lname(t.loc)) + ' only' : ' · all 8 kitchens') + '</div>' : '') + '</span>' +
             (t.day != null ? '<span class="xs b" style="color:var(--brand)">Every ' + DAY_NAMES[t.day] + '</span>' : '') +
-            (canManageClean() ? '<button class="editn" data-a="deleteClean" data-x="' + h(t.tk) + '" title="Delete cleaning" aria-label="Delete cleaning">🗑</button>' : '') +
+            (canManageClean() ? '<button class="editn" data-a="deleteClean" data-x="' + h(t.tk) + '" title="Delete cleaning" aria-label="Delete cleaning">' + ic('trash') + '</button>' : '') +
             '</div>';
         }).join('') + '</div>';
     });
@@ -14747,7 +14746,7 @@ function checklistSheet() {
             '<button class="btn sec" style="width:auto;padding:6px 12px" data-a="restoreClean" data-x="' + h(tk) + '">Put back</button></div>';
         }).join('') + '</div>';
     }
-    body += '<button class="btn sec" data-a="renameHistory" style="margin-top:12px">🕘 Checklist history</button>';
+    body += '<button class="btn sec" data-a="renameHistory" style="margin-top:12px">Checklist history</button>';
   }
   openSheet('Full kitchen deep-clean checklist', body);
 }
@@ -14765,7 +14764,7 @@ function renameHistorySheet() {
         '<div class="xs muted">' + h(LABEL[r.action] || r.action) +
         (r.action === 'rename' && r.prevName ? ' · was “' + h(r.prevName) + '”' : '') + '</div>' +
         '<div class="xs muted">' + h(r.byName || '—') + ' · ' + h(fmtDT(new Date(r.at).getTime())) + '</div></span></div>';
-    }).join('') : '<div class="empty"><div class="ic">🕘</div>The checklist has not been changed yet</div>') + '</div>');
+    }).join('') : '<div class="empty">The checklist has not been changed yet</div>') + '</div>');
   }, function (err) {
     SHEET_STACK.pop();
     openSheet('Checklist history', '<div class="card sm">' + h(err && err.offline ? 'You are offline — the checklist history is kept on the server.' : (err.message || 'Could not load the history')) + '</div>');
@@ -14885,10 +14884,10 @@ function isStandalone() {
 function installSheet() {
   var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   var body = isStandalone()
-    ? '<div class="card center"><div style="font-size:40px">✅</div><div class="b" style="margin-top:6px">Already installed</div>' +
+    ? '<div class="card center"><div class="b" style="margin-top:6px">Already installed</div>' +
       '<div class="sm muted">You are running Bookends as an app.</div></div>'
     : '<div class="card sm">Adding it to your home screen makes it open full screen, load faster and work without internet.</div>' +
-      (deferredInstall ? '<button class="btn" data-a="doInstall" style="margin-bottom:12px">📲 Install now</button>' : '') +
+      (deferredInstall ? '<button class="btn" data-a="doInstall" style="margin-bottom:12px">Install now</button>' : '') +
       '<div class="card"><div class="b sm" style="margin-bottom:8px">' + (iOS ? 'On iPhone / iPad' : 'On Android') + '</div>' +
       (iOS
         ? '<ol class="sm muted" style="margin:0;padding-left:20px;line-height:1.7"><li>Tap the <b>Share</b> button at the bottom of Safari</li><li>Scroll down and tap <b>Add to Home Screen</b></li><li>Tap <b>Add</b></li></ol>'
@@ -14990,9 +14989,9 @@ function mgMatches(hayParts) {
    MGMT_ITEMS is the single list both renderings read from, so the sidebar and
    the phone panel can never drift apart. */
 var MGMT_ITEMS = [
-  ['users', '👥', 'User Management', 'Users, roles and assignments'],
-  ['jobs', '💼', 'Job Management', 'Job types, services and setup'],
-  ['review', '✅', 'Task Review', 'Approve or reject completed work']
+  ['users', ic('user'), 'User Management', 'Users, roles and assignments'],
+  ['jobs', ic('briefcase'), 'Job Management', 'Job types, services and setup'],
+  ['review', ic('check'), 'Task Review', 'Approve or reject completed work']
 ];
 
 /* The phone rendering: a panel above the bottom bar, because a horizontal bar
@@ -15095,12 +15094,10 @@ function renderTaskReview() {
         '<td class="nowrap">' + (st === 'waiting'
           ? mgBtn('approve', t.id, '✓', 'Approve', 'background:#e8f0fb;color:var(--grn)') +
             mgBtn('rejectAsk', t.id, '✕', 'Reject', 'background:#fbe5e6;color:var(--red)')
-          : mgBtn('task', t.id, '👁', 'Open the job')) +
+          : mgBtn('task', t.id, ic('eye'), 'Open the job')) +
         '</td></tr>';
     }), all.length ? 'Nothing matches this view' : 'Nothing has been sent in yet');
 
-  html += '<div class="card sm muted" style="margin-top:12px">Only this account can approve or reject. ' +
-    'Everyone else records the work and sends it here. Approved and rejected work stays on this page.</div>';
 
   $('#app').innerHTML = html + '<div style="height:20px"></div></div>';
   mgWireSearch(renderTaskReview);
@@ -15221,16 +15218,14 @@ function renderUserManagement() {
         '<td class="nowrap">' +
           (u.pending
             ? mgBtn('superDash', u.id, '✓', 'Review sign-up', 'background:#e8f0fb;color:var(--grn)')
-            : mgBtn('editUser', u.id, '✏️', 'Edit user') +
-              mgBtn('resetPw', u.id, '🔑', 'Reset password') +
+            : mgBtn('editUser', u.id, ic('edit'), 'Edit user') +
+              mgBtn('resetPw', u.id, ic('key'), 'Reset password') +
               (isSuper || isMe ? '' :
                 mgBtn('toggleUser', u.id, u.disabled ? '▶' : '⏸', (u.disabled ? 'Enable' : 'Disable') + ' user') +
                 mgBtn('delUser', u.id, '✕', 'Delete user', 'background:#fbe5e6;color:var(--red)'))) +
         '</td></tr>';
     }), MGMT_Q ? 'No account matches “' + MGMT_Q + '”' : 'No accounts');
 
-  html += '<div class="card sm muted" style="margin-top:12px"><b>Assigned Jobs</b> shows what each person can work on today: every service at their kitchen. ' +
-    'Assigning individual services to individual people comes next.</div>';
 
   $('#app').innerHTML = html + '<div style="height:20px"></div></div>';
   mgWireSearch(renderUserManagement);
@@ -15377,8 +15372,7 @@ function renderJobManagement() {
     [LOCATIONS.length, 'Restaurants', 'var(--blue)']
   ]);
 
-  html += '<button class="btn" data-a="addJobType" style="margin-top:12px">＋ Add Job Type</button>' +
-    '<div class="card sm muted" style="margin-top:10px">Open a job type below to add jobs to it.</div>';
+  html += '<button class="btn" data-a="addJobType" style="margin-top:12px">＋ Add Job Type</button>';
 
   html += mgSearchBox(MGMT_Q, 'Job type name or description');
 
@@ -15399,8 +15393,8 @@ function renderJobManagement() {
         '<td class="sm"><b>' + c.n + '</b> <span class="muted">' + h(c.what) + '</span></td>' +
         '<td>' + pill(t.active ? 'ACTIVE' : 'INACTIVE', t.active ? 'p-grn' : 'p-red') + '</td>' +
         '<td class="nowrap">' +
-          mgBtn('openType', t.id, '📋', 'Open ' + c.what) +
-          mgBtn('editJobType', t.id, '✏️', 'Edit job type') +
+          mgBtn('openType', t.id, ic('list'), 'Open ' + c.what) +
+          mgBtn('editJobType', t.id, ic('edit'), 'Edit job type') +
           mgBtn('toggleJobType', t.id, t.active ? '⏸' : '▶', t.active ? 'Deactivate' : 'Activate') +
           (t.builtin ? '' : mgBtn('delJobType', t.id, '✕', 'Delete job type', 'background:#fbe5e6;color:var(--red)')) +
         '</td></tr>';
@@ -15488,9 +15482,6 @@ function renderTypeProducts(t, kind) {
         '</tr>';
     }), isLab ? 'Nobody has added a label yet' : 'Nothing is being tracked yet');
 
-  html += '<div class="card sm muted" style="margin-top:12px">' +
-    (isLab ? 'Every label anyone has added, newest first.' : 'Everything being tracked, soonest to expire first.') +
-    ' Tap a name to open it. They are added on the ' + h(t.name) + ' page, not here.</div>';
   $('#app').innerHTML = html + '<div style="height:20px"></div></div>';
   mgWireSearch(renderTypeServices);
 }
@@ -15712,9 +15703,6 @@ function jobsSection(t) {
       : tab === 'done' ? 'No ' + what + ' services are done yet.'
       : 'No ' + what + ' services yet') + '</div>';
 
-  html += '<div class="card sm muted" style="margin-top:12px">Double-click any detail — name, area, frequency, schedule, who it is assigned to, or status — to edit it in place. Restaurants opens a picker. ' +
-    'Enter saves, Escape cancels.' +
-    (oneOffs.length ? ' A one-off job has no schedule to edit; tap its name to open the job.' : '') + '</div>';
   return html + '</div>';
 }
 
@@ -15749,7 +15737,6 @@ function peopleSheet(tk) {
     '<div class="sm muted" style="margin-bottom:4px">Everyone ticked sees this job in their own account.</div>' +
     peopleChecks('sp', roster, assigneesOf(j)) +
     '</div>' +
-    '<div class="card sm muted">Someone at another kitchen sees only the jobs given to them there, not the rest of that kitchen’s work.</div>' +
     '<div class="btnrow"><button class="btn sec" data-a="closeSheet">Cancel</button>' +
     '<button class="btn ok" data-a="savePeople" data-x="' + h(tk) + '">Save</button></div>');
   wirePeopleChecks('sp');
@@ -15766,8 +15753,6 @@ function locsSheet(tk) {
     (isAllOutlets(j) ? '<div class="card sm" style="background:#fff7e2;border-color:#f6dfa3;margin:12px 0 0">' +
       '<b>No restaurants chosen yet.</b> Until they are, this job runs at all ' + LOCATIONS.length + '.</div>' : '') +
     '</div>' +
-    '<div class="card sm muted">Jobs nobody has started yet disappear from a restaurant you untick. ' +
-    'Cleaning already done, photographed or approved stays where it is.</div>' +
     '<div class="btnrow"><button class="btn sec" data-a="closeSheet">Cancel</button>' +
     '<button class="btn ok" data-a="saveLocs" data-x="' + h(tk) + '">Save</button></div>');
   wireLocChecks('sl');
@@ -15790,7 +15775,6 @@ function jobTypeForm(id) {
     '<option value="0"' + (t && !t.active ? ' selected' : '') + '>Inactive — not scheduled</option></select></label>' +
     (JOBT_ERR ? '<div class="card" style="background:#fde8e9;border-color:#f7c9cc;margin:12px 0 0"><b class="sm">' + h(JOBT_ERR) + '</b></div>' : '') +
     '</div>' +
-    (t && t.builtin ? '<div class="card sm muted">Cleaning is built into the app. It can be renamed or switched off, but not removed.</div>' : '') +
     '<div class="btnrow"><button class="btn sec" data-a="closeSheet">Cancel</button>' +
     '<button class="btn ok" data-a="saveJobType" data-x="' + h(id || '') + '">' + (t ? 'Save Changes' : 'Add Job Type') + '</button></div>');
   var n = document.getElementById('jt_name'); if (n) n.focus();
@@ -15893,7 +15877,7 @@ function addJobForm(presetType) {
     '<div class="f" style="margin-top:12px"><span>4 · Assign Users</span>' +
     peopleChecks('aj', roster, ADDJOB_USERS) +
     '<div class="xs muted" style="margin-top:6px">' + (nobodyHasType(typeId)
-      ? '⚠️ Nobody is set to ' + h(jobTypeName(typeId)) + ' yet, so everyone is listed. Set job types in User Management.'
+      ? 'Nobody is set to ' + h(jobTypeName(typeId)) + ' yet, so everyone is listed. Set job types in User Management.'
       : 'Only people set to ' + h(jobTypeName(typeId)) + ' are listed.') + '</div></div>' +
 
     '<div class="grid2" style="margin-top:12px">' +
@@ -15927,7 +15911,7 @@ function addJobForm(presetType) {
       ' <span style="color:var(--red)">(required)</span>';
     document.getElementById('aj_pick').innerHTML =
       opts.map(function (o) { return '<option value="' + h(o) + '">' + h(o) + '</option>'; }).join('') +
-      '<option value="__new">➕ A new one…</option>';
+      '<option value="__new">+ A new one…</option>';
     if (!opts.length) document.getElementById('aj_pick').value = '__new';
     syncNew();
   }
@@ -16132,9 +16116,9 @@ var CHKW = (function () {
 /* CHECKLIST-WINDOWS-END */
 
 var CK_STYLE = {
-  LUNCH:   { icon: '🍽️', bg: '#fff7e2', short: 'Lunch' },
-  DINNER:  { icon: '🌆', bg: '#fde9e4', short: 'Dinner' },
-  CLOSING: { icon: '🌙', bg: '#eef2ff', short: 'Closing' }
+  LUNCH:   { icon: '', bg: '#fff7e2', short: 'Lunch' },
+  DINNER:  { icon: '', bg: '#fde9e4', short: 'Dinner' },
+  CLOSING: { icon: '', bg: '#eef2ff', short: 'Closing' }
 };
 /* The checklist questions. Keep in step with server/services/checklistItems.js. */
 var CK_FORM = [
@@ -16302,8 +16286,6 @@ function renderChecklists() {
   CK.cardsHtml = ckCardsHtml();
   html += '<div class="ck-grid" id="ck_cards">' + CK.cardsHtml + '</div>';
   html += ckNotifyCardHtml();
-  html += '<div class="card sm muted" style="margin-top:12px">Each checklist opens only during its time window. ' +
-    'Press <b>Open Checklist</b>, tick the items you have done and submit.</div>';
   html += '<div id="ck_records">' + ckRecordsHtml() + '</div>';
   html += '<div style="height:20px"></div></div>';
   $('#app').innerHTML = html;
@@ -16474,7 +16456,7 @@ function ckReminders() {
     ckMarkReminded(r.key);
     var t = ckReminderText(r);
     ckShowNotification(t.title, t.body, 'ck-' + r.key);
-    toast('🔔 ' + t.title);
+    toast(t.title);
     if (S.tab === 'home' || S.tab === 'chk') render();
     else if (typeof tabbar === 'function') tabbar();
   });
@@ -16496,16 +16478,15 @@ function ckReminderAlerts() {
 function ckNotifyCardHtml() {
   if (!ckRemindable()) return '';
   if (!ckNotifySupported()) {
-    return '<div class="card sm muted">🔔 Reminders 5 minutes before each checklist opens and closes appear here in the app. ' +
-      'For phone notifications too, add this app to your home screen.</div>';
+    return '';
   }
   if (Notification.permission === 'granted') {
-    return '<div class="card sm muted">🔔 Reminders are on: you get a notification 5 minutes before each checklist opens and closes, while the app is open.</div>';
+    return '';
   }
   if (Notification.permission === 'denied') {
-    return '<div class="card sm muted">🔕 Notifications are blocked for this site in your browser settings. Reminders still appear inside the app.</div>';
+    return '';
   }
-  return '<div class="card"><div class="b">🔔 Checklist reminders</div>' +
+  return '<div class="card"><div class="b">Checklist reminders</div>' +
     '<div class="sm muted" style="margin:4px 0 10px">Get a notification 5 minutes before each checklist opens and 5 minutes before it closes.</div>' +
     '<button class="btn sec" data-a="ckNotifyOn">Turn on reminders</button></div>';
 }
@@ -16550,7 +16531,7 @@ function ckSheet(type, replace) {
 
   var body = '<div class="card" style="background:linear-gradient(135deg,var(--brand),var(--brand2));border:0;color:#fff">' +
     '<div class="xs" style="letter-spacing:1.2px;font-weight:800;opacity:.8">YOU ARE COMPLETING</div>' +
-    '<div style="font-size:21px;font-weight:800;margin-top:2px">' + CK_STYLE[type].icon + ' ' + h(w.label) + '</div>' +
+    '<div style="font-size:21px;font-weight:800;margin-top:2px">' + h(w.label) + '</div>' +
     '<div class="sm" style="opacity:.85">' + ckRangeText(w) + ' IST · shift of ' + fmtD(s.shiftDate) +
     (loc ? ' · ' + h(lname(loc)) : '') + ' · ' + h(ME.name) + '</div></div>';
 
@@ -16569,8 +16550,7 @@ function ckSheet(type, replace) {
       '<div class="sm muted">Choose the kitchen you are at from the location menu at the top of the page, then open the checklist again.</div></div>' +
       '<button class="btn sec" data-a="closeSheet">Choose kitchen</button>';
   } else {
-    body += '<div class="card sm muted" style="margin-top:12px">Tick each item as you complete it. You can submit at any time; any item left unticked is recorded as not done.</div>' +
-      ckFormHtml(type) +
+    body += ckFormHtml(type) +
       '<div id="ck_count" class="sm b center" style="margin:14px 0 6px">' + ckTickNote(type) + '</div>' +
       '<div id="ck_err" class="ck-err" role="alert">' + h(CK.err[type] || '') + '</div>' +
       '<button id="ck_submit" class="btn" data-a="ckSubmit" data-x="' + type + '"' + (CK.busy ? ' disabled' : '') + '>' +
@@ -16729,7 +16709,7 @@ function ckRecordsHtml() {
       ? '<div class="card sm"><b>' + h(CK.recErr) + '</b> <button class="btn sec sm" data-a="ckReload" style="margin-left:8px">Try again</button></div>'
       : '<div class="card center sm muted">Loading checklist records…</div>');
   }
-  if (!rows.length) return html + '<div class="card empty" style="margin-top:12px"><div class="ic">📋</div>No checklist was sent in this period.</div>';
+  if (!rows.length) return html + '<div class="card empty" style="margin-top:12px">No checklist was sent in this period.</div>';
   var order = { LUNCH: 0, DINNER: 1, CLOSING: 2 };
   var list = rows.slice().sort(function (a, b) {
     return a.shiftDate !== b.shiftDate ? (a.shiftDate < b.shiftDate ? 1 : -1)
@@ -16742,11 +16722,10 @@ function ckRecordsHtml() {
       return '<tr data-a="ckView" data-x="' + h(r.id) + '" style="cursor:pointer">' +
         '<td style="white-space:nowrap"><b>' + fmtD(r.shiftDate) + '</b></td>' +
         '<td class="sm">' + (r.loc ? h(lname(r.loc)) : '—') + '</td>' +
-        '<td class="sm" style="white-space:nowrap">' + (st ? st.icon + ' ' + h(st.short) : h(r.type)) + '</td>' +
+        '<td class="sm" style="white-space:nowrap">' + (st ? h(st.short) : h(r.type)) + '</td>' +
         '<td class="sm">' + h(r.userName) + '<div class="xs muted">' + ckTime(r.submittedAt) + ' IST</div></td>' +
         '<td style="white-space:nowrap">' + ckTickedCell(r) + '</td></tr>';
-    }).join('') + '</table></div></div>' +
-    '<div class="card sm muted" style="margin-top:12px">Tap a row to see every item of that checklist.</div>';
+    }).join('') + '</table></div></div>';
   return html;
 }
 /* Light / dark mode, per device. The head script applies it before the
@@ -17125,7 +17104,7 @@ document.addEventListener('click', function (ev) {
     case 'dropProductPhoto': {
       window._form.photo = null;
       var pb = document.getElementById('f_photobox');
-      if (pb) pb.innerHTML = '<div><div style="font-size:34px">📷</div><div class="ph-t" style="font-size:14px">TAP TO TAKE PHOTO</div></div>';
+      if (pb) pb.innerHTML = '<div><div class="ph-t" style="font-size:14px">TAP TO TAKE PHOTO</div></div>';
       var rm = document.querySelector('[data-a="dropProductPhoto"]');
       if (rm) rm.remove();
       break;
@@ -17193,7 +17172,7 @@ document.addEventListener('input', function (ev) {
       .filter(function (p) { return !S.q || (p.name + p.batch + p.cat).toLowerCase().indexOf(S.q.toLowerCase()) > -1; })
       .sort(function (a, b) { return parseD(a.expiry) - parseD(b.expiry); });
     var card = document.querySelectorAll('#app .card.pad0');
-    if (card.length) card[card.length - 1].innerHTML = list.length ? list.map(prodRow).join('') : '<div class="empty"><div class="ic">📦</div>No match</div>';
+    if (card.length) card[card.length - 1].innerHTML = list.length ? list.map(prodRow).join('') : '<div class="empty">No match</div>';
   }
 });
 function saveProduct() {
