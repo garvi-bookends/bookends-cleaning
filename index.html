@@ -383,7 +383,18 @@ a.btn{text-decoration:none}
   .mgcaret:hover{background:rgba(255,255,255,.16);color:#fff}
   .tabs-in.mg-shut .mgcaret{transform:rotate(-90deg)}
   .tabs-in.mg-shut .mgtab{display:none}
+  /* Dark Mode row: pinned to the bottom of the sidebar, switch on the right. */
+  .tab.thtab{display:flex;margin-top:auto}
+  .thtab svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tsw{position:relative;flex:none;width:38px;height:22px;border-radius:11px;background:rgba(255,255,255,.22);transition:background .2s}
+  .tsw::after{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;
+    box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+  .tsw.on{background:var(--accent)}
+  .tsw.on::after{transform:translateX(16px)}
+  .tabs-in{flex:1}
+  .thbtn{display:none}
 }
+.thtab{display:none}
 @media (min-width:1280px){ .wrap{padding:24px 40px} }
 .netbar{position:fixed;left:0;right:0;top:0;z-index:300;background:#8a5f00;color:#fff;font-size:12.5px;font-weight:700;
   text-align:center;padding:calc(env(safe-area-inset-top) + 6px) 12px 6px}
@@ -12723,6 +12734,7 @@ function ic(name) {
     shield: 'M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5zm-1.2 13.4l6-6-1.4-1.4-4.6 4.6-2.2-2.2-1.4 1.4z',
     user: 'M12 12a5 5 0 10-5-5 5 5 0 005 5zm0 2c-4 0-9 2-9 5v3h18v-3c0-3-5-5-9-5z',
     briefcase: 'M9 4h6a2 2 0 012 2v1h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2h3V6a2 2 0 012-2zm0 3h6V6H9z',
+    moon: 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z',
     check: 'M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm5.6 13.2l7-7-1.4-1.4-5.6 5.6-2.8-2.8-1.4 1.4z'
   }[name];
   return '<svg viewBox="0 0 24 24"><path d="' + p + '"/></svg>';
@@ -12747,7 +12759,7 @@ function header(title, sub) {
   }
   return '<div class="hdr"><div class="hdr-row">' +
     '<h1>' + h(title) + '<small>' + h(sub) + (perm().manage ? cloudDot() : '') + '</small></h1>' +
-    '<button class="iconbtn" data-a="theme" title="' + (isDark() ? 'Light mode' : 'Dark mode') + '">' + (isDark() ? '☀️' : '🌙') + '</button>' +
+    '<button class="iconbtn thbtn" data-a="theme" title="' + (isDark() ? 'Light mode' : 'Dark mode') + '">' + (isDark() ? '☀️' : '🌙') + '</button>' +
     '<button class="iconbtn rel" data-a="alerts">' + ic('bell') + (al ? '<span class="badge">' + (al > 99 ? '99+' : al) + '</span>' : '') + '</button>' +
     '<button class="iconbtn" data-a="me">' + h(initials(ME.name)) + '</button>' +
     '</div>' + locSel + '</div>';
@@ -12832,6 +12844,10 @@ function tabbar() {
     }).join('');
   }
 
+  /* Dark Mode, at the foot of the sidebar: a moon, the words and a switch.
+     The phone's bar has no room for it; there it is the header's 🌙. */
+  nav += '<button class="tab thtab" data-a="theme" role="switch" aria-checked="' + isDark() + '">' + ic('moon') +
+    '<span>Dark Mode</span><i class="tsw' + (isDark() ? ' on' : '') + '"></i></button>';
   $('#tabbar').innerHTML = '<div class="tabs"><div class="tabs-in' +
     (perm().superadmin && !mgmtNavOpen() ? ' mg-shut' : '') + '">' + nav + '</div></div>';
 }
@@ -13128,7 +13144,7 @@ function renderSimpleHome() {
 
   var html = '<div class="hdr"><div class="hdr-row">' +
     '<h1 style="font-size:19px">Hi ' + h(ME.name.split(' ')[0]) + '<small>' + h(lname(loc)) + '</small></h1>' +
-    '<button class="iconbtn" data-a="theme" title="' + (isDark() ? 'Light mode' : 'Dark mode') + '">' + (isDark() ? '☀️' : '🌙') + '</button>' +
+    '<button class="iconbtn thbtn" data-a="theme" title="' + (isDark() ? 'Light mode' : 'Dark mode') + '">' + (isDark() ? '☀️' : '🌙') + '</button>' +
     '<button class="iconbtn rel" data-a="alerts">' + ic('bell') + (unreadAlerts().length ? '<span class="badge">' + unreadAlerts().length + '</span>' : '') + '</button>' +
     '<button class="iconbtn" data-a="me">' + h(initials(ME.name)) + '</button></div></div>';
 
