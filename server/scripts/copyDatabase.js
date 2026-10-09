@@ -26,6 +26,11 @@ require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env'), quiet
 var pg = require('pg');
 var connectionParams = require('../db/connectionParams');
 
+/* Read DATE columns as the plain 'YYYY-MM-DD' text. pg's default turns them
+   into a JS Date at local midnight, which JSON writes as the previous day in
+   UTC on an IST machine — a checklist's shift_date arrived one day early. */
+pg.types.setTypeParser(1082, function (v) { return v; });
+
 var SOURCE = process.env.DATABASE_URL || '';
 var TARGET = process.env.SUPABASE_DB_URL || process.env.TARGET_DATABASE_URL || '';
 
