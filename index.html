@@ -15492,7 +15492,14 @@ function renderTypeChecklists(t) {
     html += '<div class="card sm" style="background:#fde8e9;border-color:#f7c9cc;margin-top:12px"><b>This job type is switched off.</b> ' +
       'Nobody can be given checklist work while it is.</div>';
   }
-  html += '<label class="f" style="margin-top:12px"><span>Date</span>' +
+  /* Today / Yesterday in one tap: a page that opens on today showed nothing
+     before the first checklist of the day, and yesterday's sat a date-picker
+     away. */
+  var yesterday = CHKW.addDaysYmd(today, -1);
+  html += '<div class="chips" style="margin-top:12px">' + [[today, 'Today'], [yesterday, 'Yesterday']].map(function (c) {
+    return '<button class="chip' + (date === c[0] ? ' on' : '') + '" data-a="ckMgDay" data-x="' + c[0] + '">' + c[1] + '</button>';
+  }).join('') + '</div>';
+  html += '<label class="f" style="margin-top:4px"><span>Date</span>' +
     '<input class="inp" id="ckm_date" type="date" value="' + h(date) + '" max="' + h(today) + '"></label>';
   html += mgSearchBox(MGMT_Q, 'Restaurant, manager or checklist');
   html += mgChips([['all', 'All ' + list.length], ['pending', 'Pending ' + (rows ? pend : '…')], ['done', 'Done ' + (rows ? done : '…')]], MGMT_FILTER);
@@ -16259,7 +16266,7 @@ var CK = {
   busy: false,
   sheet: null, sheetOpen: null,
   sig: '', cardsHtml: '',
-  recRange: 'today',
+  recRange: '7d',     /* opens on the last week, so yesterday's checklists are there before today's first one */
   cache: {}, recErr: ''
 };
 
@@ -17170,6 +17177,7 @@ document.addEventListener('click', function (ev) {
     case 'ckView': ckViewRec(x); break;
     case 'ckTick': { var tp = x.split(':'); ckTick(tp[0], +tp[1], el); break; }
     case 'ckRange': CK.recRange = x; CK.recErr = ''; ckPaintRecords(); ckLoadRecords(false); break;
+    case 'ckMgDay': if (/^\d{4}-\d{2}-\d{2}$/.test(x)) { CK_MDATE = x; renderTypeServices(); } break;
     case 'ckReload': CK.recErr = ''; ckPaintRecords(); ckLoadRecords(true); break;
   }
 });

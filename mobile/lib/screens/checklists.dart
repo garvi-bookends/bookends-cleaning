@@ -142,7 +142,7 @@ class ChecklistScreen extends StatefulWidget {
 }
 
 class _ChecklistScreenState extends State<ChecklistScreen> {
-  String range = 'today';
+  String range = '7d';
   List<Rec>? records;
   String? recErr;
 
