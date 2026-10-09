@@ -15442,6 +15442,14 @@ var CK_MBUSY = false;         /* a refresh of that day is in flight */
 function ckMgRefresh(force) {
   if (CK_MBUSY || !(S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist')) return;
   var date = CK_MDATE || ckTodayIST();
+  /* The "Sent in the last 7 days" list, fetched alongside the picked day. */
+  var t = ckTodayIST(), wkFrom = CHKW.addDaysYmd(t, -6);
+  if (force || ckCacheAge(wkFrom, t, null) >= 30000) {
+    var wkBefore = JSON.stringify(ckCached(wkFrom, t, null));
+    ckFetch(wkFrom, t, null, true).then(function (rows) {
+      if (JSON.stringify(rows) !== wkBefore && S.tab === 'manage' && S.manage === 'type' && S.manageType === 'checklist') renderTypeServices();
+    }, function () { /* the day table above still shows its own error */ });
+  }
   if (!force && ckCacheAge(date, date, null) < 30000) return;
   var before = JSON.stringify(ckCached(date, date, null));
   CK_MBUSY = true;
@@ -15515,6 +15523,29 @@ function renderTypeChecklists(t) {
     if (MGMT_FILTER === 'done' && !x.done) return false;
     return mgMatches([x.L.name, x.L.code, x.L.city, x.mgr, x.w.label, x.sub ? x.sub.userName : '']);
   });
+  /* Every checklist sent in the last 7 days, whatever day is picked, so
+     the work already done is on this page even before today's first one. */
+  var wkFrom = CHKW.addDaysYmd(today, -6);
+  var recent = ckCached(wkFrom, today, null);
+  var order = { LUNCH: 0, DINNER: 1, CLOSING: 2 };
+  var sent = (recent || []).filter(function (r) {
+    return mgMatches([lname(r.loc), r.userName, CK_STYLE[r.type] ? CK_STYLE[r.type].short : r.type]);
+  }).sort(function (a, b) {
+    return a.shiftDate !== b.shiftDate ? (a.shiftDate < b.shiftDate ? 1 : -1)
+      : (order[a.type] - order[b.type]) || lname(a.loc).localeCompare(lname(b.loc));
+  });
+  html += '<div class="sec-t">Sent in the last 7 days · ' + fmtD(wkFrom) + ' – ' + fmtD(today) + ' · ' + (recent ? sent.length : '…') + '</div>';
+  html += recent
+    ? mgTable(['Date', 'Restaurant', 'Checklist', 'Sent by', 'Ticked'], sent.map(function (r) {
+        return '<tr data-a="ckView" data-x="' + h(r.id) + '" style="cursor:pointer">' +
+          '<td class="sm nowrap"><b>' + fmtD(r.shiftDate) + '</b></td>' +
+          '<td class="sm">' + h(lname(r.loc)) + '</td>' +
+          '<td class="sm">' + (CK_STYLE[r.type] ? CK_STYLE[r.type].icon + ' ' + h(CK_STYLE[r.type].short) : h(r.type)) + '</td>' +
+          '<td class="sm">' + h(r.userName) + '<div class="xs muted">' + h(ckTime(r.submittedAt)) + ' IST</div></td>' +
+          '<td class="sm nowrap">' + ckTickedCell(r) + '</td>' +
+          '</tr>';
+      }), 'No checklist has been sent in the last 7 days')
+    : '<div class="card sm muted">Loading checklist data…</div>';
   html += '<div class="sec-t">Restaurant-wise · ' + fmtD(date) + ' · ' + shown.length +
     (shown.length !== list.length ? ' of ' + list.length : '') + '</div>';
   /* A restaurant and its manager are written once, spanning that
@@ -15540,6 +15571,7 @@ function renderTypeChecklists(t) {
         : '<span class="muted">—</span>') + '</td>' +
       '</tr>';
   }), MGMT_FILTER === 'done' ? 'No checklist is done yet for this day' : MGMT_FILTER === 'pending' ? 'Nothing is pending — every checklist is done' : 'Nothing matches');
+
 
   html += '<div class="card sm muted" style="margin-top:12px"><b>Done</b> means the checklist was sent: someone at that restaurant submitted it ' +
     'inside its time window. <b>Sent by</b> shows who, and when; <b>Ticked</b> shows how many items they ticked — tap <b>View checklist</b> to see every item. ' +
