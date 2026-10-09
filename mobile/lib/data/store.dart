@@ -27,7 +27,7 @@ class Store extends ChangeNotifier {
   // ---- session ----
   Rec? me;
   bool offline = false;
-  String defaultPassword = '799020';
+  String defaultPassword = '1234';
   int minPasswordLength = 8;
 
   // ---- data ----
