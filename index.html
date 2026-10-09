@@ -13392,9 +13392,11 @@ function alertsSheet() {
       '<div class="xs muted trunc">' + h(a.body) + '</div></span>' +
       (DB.read[a.id] ? '' : '<span class="dot" style="background:var(--blue)"></span>') + '</button>';
   }).join('') : '<div class="empty"><div class="ic">✅</div>No open alerts</div>';
-  openSheet('Notifications (' + al.length + ')',
+  /* The same number the bell shows: what has not been read yet. */
+  var unread = al.filter(function (a) { return !DB.read[a.id]; }).length;
+  openSheet('Notifications (' + unread + (unread !== al.length ? ' new of ' + al.length : '') + ')',
     '<div class="card pad0">' + body + '</div>' +
-    (al.length ? '<button class="btn sec" data-a="readAll">Mark all as read</button>' : ''));
+    (unread ? '<button class="btn sec" data-a="readAll">Mark all as read</button>' : ''));
 }
 
 /* ---------- profile sheet ---------- */
@@ -17033,6 +17035,8 @@ document.addEventListener('click', function (ev) {
     case 'readAll': buildAlerts().forEach(function (al) { DB.read[al.id] = 1; }); save(); closeSheet(); render(); break;
     case 'goAlert': {
       DB.read[el.getAttribute('data-y')] = 1; save(); closeSheet();
+      /* Redraw first, so the bell's count drops by the one just read. */
+      render();
       var parts = x.split(':');
       if (parts[0] === 'task') taskSheet(parts[1]);
       else if (parts[0] === 'chk') { S.tab = 'chk'; render(); }
