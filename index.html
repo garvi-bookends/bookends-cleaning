@@ -16422,6 +16422,8 @@ document.addEventListener('visibilitychange', function () {
      - 5 minutes before a checklist opens:  "Lunch Checklist opens in 5 minutes"
      - 5 minutes before it closes, if their restaurant has not sent it yet:
                                             "Lunch Checklist closes in 5 minutes"
+     - when it opens (kept while open and not sent): "Lunch Checklist is open now"
+     - when it closes (kept for 2 hours):   "Lunch Checklist has closed"
    Each reminder shows once: as a system notification when the person has
    allowed them (phones need the service worker in sw.js for that), as a
    message in the app, and in the bell until the moment passes.
@@ -16448,12 +16450,42 @@ function ckDueReminders() {
     if (s.open && now >= s.endsAt - CK_REMIND_MS && now < s.endsAt && !ckSubmission(w.type, s.shiftDate)) {
       out.push({ key: w.type + '|close|' + s.endsAt, w: w, kind: 'close', at: s.endsAt, shiftDate: s.shiftDate });
     }
+    /* At the moment it opens: "is open now", kept while it is open and not
+       sent (the 5-minute closing warning takes over at the end). */
+    if (s.open && now >= s.startsAt && now < s.endsAt - CK_REMIND_MS && !ckSubmission(w.type, s.shiftDate)) {
+      out.push({ key: w.type + '|opened|' + s.startsAt, w: w, kind: 'opened', at: s.endsAt, shiftDate: s.shiftDate });
+    }
+    /* At the moment it closes: "has closed", kept for 2 hours. Today's and
+       yesterday's shift are both asked about, because Closing runs past
+       midnight and belongs to the day before. */
+    var today = CHKW.istParts(now).ymd;
+    [today, CHKW.addDaysYmd(today, -1)].some(function (d) {
+      var b = CHKW.shiftBounds(w, d);
+      if (now < b.endsAt || now >= b.endsAt + CK_CLOSED_MS) return false;
+      out.push({ key: w.type + '|closed|' + b.endsAt, w: w, kind: 'closed', at: b.endsAt, shiftDate: d });
+      return true;
+    });
   });
   return out;
 }
+var CK_CLOSED_MS = 2 * 3600000;
 function ckReminderText(r) {
   var mins = Math.max(1, Math.ceil((r.at - ckNow()) / 60000));
   var inMin = mins + ' minute' + (mins === 1 ? '' : 's');
+  var at = ckLoc() ? ' ' + lname(ckLoc()) + '.' : '';
+  if (r.kind === 'opened') {
+    return { title: r.w.label + ' is open now', body: 'Open until ' + CHKW.fmtMinutes(r.w.end) + ' IST.' + at };
+  }
+  if (r.kind === 'closed') {
+    /* Whether it was sent is only known for the shifts the status covers. */
+    var st = CK.status && CK.status[r.w.type];
+    var known = st && st.shiftDate === r.shiftDate;
+    var sub = known ? ckSubmission(r.w.type, r.shiftDate) : null;
+    return { title: r.w.label + ' has closed',
+      body: sub ? 'Sent by ' + (sub.userName || 'your team') + ' at ' + ckTime(sub.submittedAt) + ' IST.' + at
+        : known ? 'Not sent.' + at
+        : 'Closed at ' + CHKW.fmtMinutes(r.w.end) + ' IST.' + at };
+  }
   return r.kind === 'open'
     ? { title: r.w.label + ' opens in ' + inMin, body: 'Open from ' + ckRangeText(r.w) + ' IST.' + (ckLoc() ? ' ' + lname(ckLoc()) + '.' : '') }
     : { title: r.w.label + ' closes in ' + inMin, body: 'Not sent yet' + (ckLoc() ? ' for ' + lname(ckLoc()) : '') + ' — closes at ' + CHKW.fmtMinutes(r.w.end) + ' IST.' };
@@ -16485,7 +16517,7 @@ function ckReminders() {
   if (!due.length) return;
   /* "Closes soon" depends on whether the restaurant has sent it: make sure
      that is known (fresh within 90 seconds) before saying so. */
-  if (due.some(function (r) { return r.kind === 'close'; }) && !CK.offline &&
+  if (due.some(function (r) { return r.kind !== 'open'; }) && !CK.offline &&
       (!CK.loadedAt || Date.now() - CK.loadedAt > 90000)) {
     ckLoadStatus(true);
     due = due.filter(function (r) { return r.kind === 'open'; });
@@ -16507,8 +16539,9 @@ setInterval(function () { try { ckReminders(); } catch (e) { } }, 15000);
 function ckReminderAlerts() {
   return ckDueReminders().map(function (r) {
     var t = ckReminderText(r);
-    /* Top urgency, listed first: these are only true for 5 minutes. */
-    return { id: 'ck' + r.key, sev: 3, type: r.kind === 'close' ? 'Checklist closing' : 'Checklist opening',
+    /* The 5-minute warnings are the most urgent and listed first. */
+    var type = { open: 'Checklist opening', close: 'Checklist closing', opened: 'Checklist open', closed: 'Checklist closed' }[r.kind];
+    return { id: 'ck' + r.key, sev: r.kind === 'open' || r.kind === 'close' ? 3 : 2, type: type,
       loc: ckLoc() || '', title: t.title, body: t.body, go: ['chk', r.w.type] };
   });
 }
